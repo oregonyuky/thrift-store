@@ -2,11 +2,8 @@
 
 namespace AlieBrecho.Core.Domain.Entities
 {
-    public class Wishlist
+    public class Wishlist : BaseEntity
     {
-        [Key]
-        public int WishlistId { get; set; }
-
         public int CustomerId { get; set; }
 
         public int ProductId { get; set; }
