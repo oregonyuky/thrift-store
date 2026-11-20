@@ -1,93 +1,27 @@
-using Application.Common.Services.SecurityManager;
 using Application.Common.Services;
 using Application.Features.CustomerManager.Queries;
 using Domain.Entities;
 using Google.Apis.Auth;
 using Infrastructure.DataAccessManager.EFCore.Contexts;
-using Infrastructure.SecurityManager.AspNetIdentity;
-using Infrastructure.SecurityManager.NavigationMenu;
 using Infrastructure.SecurityManager.Tokens;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using static Domain.Common.Constants;
 
 namespace Infrastructure.SecurityManager.Google;
 
 public interface IGoogleAuthenticationService
 {
-    Task<LoginResultDto> LoginUserAsync(string credential, CancellationToken cancellationToken);
     Task<LoginCustomerDto> LoginCustomerAsync(string credential, CancellationToken cancellationToken);
 }
 
 public sealed class GoogleAuthenticationService(
-    UserManager<ApplicationUser> userManager,
-    ITokenService tokenService,
     ICustomerTokenService customerTokenService,
     DataContext context,
     IOptions<GoogleAuthenticationOptions> options) : IGoogleAuthenticationService
 {
-    private const string Provider = "Google";
     private readonly GoogleAuthenticationOptions _options = options.Value;
-
-    public async Task<LoginResultDto> LoginUserAsync(
-        string credential,
-        CancellationToken cancellationToken)
-    {
-        var payload = await ValidateAsync(credential, _options.Admin.ClientId);
-        var user = await userManager.FindByLoginAsync(Provider, payload.Subject);
-
-        if (user is null)
-        {
-            user = await userManager.FindByEmailAsync(payload.Email);
-            if (user is null)
-            {
-                throw new UnauthorizedAccessException(
-                    "Este e-mail Google não está cadastrado como usuário administrativo.");
-            }
-
-            var linkResult = await userManager.AddLoginAsync(
-                user,
-                new UserLoginInfo(Provider, payload.Subject, Provider));
-            if (!linkResult.Succeeded)
-            {
-                throw new InvalidOperationException(string.Join(
-                    ", ",
-                    linkResult.Errors.Select(error => error.Description)));
-            }
-        }
-
-        if (!string.Equals(user.Email, payload.Email, StringComparison.OrdinalIgnoreCase) ||
-            user.IsBlocked == true ||
-            user.IsDeleted == true)
-        {
-            throw new UnauthorizedAccessException("Acesso administrativo não autorizado.");
-        }
-
-        var roles = await userManager.GetRolesAsync(user);
-        var roleClaims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList();
-        var accessToken = tokenService.GenerateToken(user, roleClaims);
-        var refreshToken = tokenService.GenerateRefreshToken();
-
-        await ReplaceRefreshTokenAsync(user.Id, refreshToken, cancellationToken);
-
-        return new LoginResultDto
-        {
-            UserId = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            CompanyName = user.CompanyName,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            MenuNavigation = NavigationTreeStructure.GetCompleteMenuNavigationTreeNode(),
-            Roles = roles.ToList(),
-            Avatar = user.ProfilePictureName
-        };
-    }
 
     public async Task<LoginCustomerDto> LoginCustomerAsync(
         string credential,
@@ -156,27 +90,6 @@ public sealed class GoogleAuthenticationService(
             LastName = nameParts.Length <= 1 ? null : string.Join(' ', nameParts.Skip(1)),
             PictureUrl = payload.Picture
         };
-    }
-
-    private async Task ReplaceRefreshTokenAsync(
-        string userId,
-        string refreshToken,
-        CancellationToken cancellationToken)
-    {
-        var existingTokens = await context.Token
-            .Where(item => item.UserId == userId)
-            .ToListAsync(cancellationToken);
-        context.Token.RemoveRange(existingTokens);
-        await context.Token.AddAsync(new Token
-        {
-            UserId = userId,
-            RefreshToken = refreshToken,
-            ExpiryDate = DateTime.UtcNow.AddDays(TokenConsts.ExpiryInDays),
-            IsDeleted = false,
-            CreatedAtUtc = DateTime.UtcNow,
-            CreatedById = userId
-        }, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task<GoogleJsonWebSignature.Payload> ValidateAsync(

@@ -1,8 +1,6 @@
 ﻿@page
-@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Entrar";
-    var googleAdminClientId = Configuration["Google:Admin:ClientId"];
 }
 
 <div id="app" class="container-fluid" v-cloak>
@@ -66,15 +64,6 @@
             </div>
         </form>
 
-        <div class="social-auth-links text-center mb-3">
-            <p>- OU -</p>
-            @if (!string.IsNullOrWhiteSpace(googleAdminClientId))
-            {
-                <div id="googleAdminButton" class="d-flex justify-content-center"></div>
-            }
-        </div>
-        <!-- /.social-auth-links -->
-
         <p class="mb-1">
             <a asp-page="/Accounts/ForgotPassword">Esqueceu a Senha</a>
         </p>
@@ -84,12 +73,5 @@
 
 
 @section scripts {
-    @if (!string.IsNullOrWhiteSpace(googleAdminClientId))
-    {
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-        <script>
-            window.googleAdminClientId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(googleAdminClientId));
-        </script>
-    }
     <script type ="module" src="~/FrontEnd/Pages/Accounts/Login.cshtml.js"></script>
 }

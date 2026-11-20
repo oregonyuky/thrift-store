@@ -4,7 +4,6 @@ public sealed class GoogleAuthenticationOptions
 {
     public const string SectionName = "Google";
 
-    public GoogleClientOptions Admin { get; init; } = new();
     public GoogleClientOptions Customer { get; init; } = new();
 }
 
