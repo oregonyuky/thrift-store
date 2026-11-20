@@ -17,7 +17,7 @@
     let initialized = false;
     let orderConnection = null;
     let messageConnection = null;
-    const notificationOwnerKey = 'aliebrecho:admin-notifications:owner';
+    const notificationOwnerKey = 'thriftstore:admin-notifications:owner';
 
     const getNotificationOwner = () => {
         const storedOwner = localStorage.getItem(notificationOwnerKey);
@@ -34,7 +34,7 @@
     };
 
     const userStorageKey = resource =>
-        `aliebrecho:admin-notifications:${getNotificationOwner()}:${resource}`;
+        `thriftstore:admin-notifications:${getNotificationOwner()}:${resource}`;
 
     const readState = (resource) => {
         try {

@@ -227,7 +227,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
             },
             ["options"] = new
             {
-                platform = "AlieBrecho",
+                platform = "ThriftStore",
                 reminder = $"Pedido {order.Id}",
                 insurance_value = insuranceValue,
                 receipt = false,

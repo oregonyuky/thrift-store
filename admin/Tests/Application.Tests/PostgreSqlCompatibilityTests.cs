@@ -14,7 +14,7 @@ public class PostgreSqlCompatibilityTests
     public void Create_script_uses_postgresql_compatible_filter_and_row_version()
     {
         var options = new DbContextOptionsBuilder<DataContext>()
-            .UseNpgsql("Host=localhost;Database=aliebrecho_model_test;Username=test;Password=test")
+            .UseNpgsql("Host=localhost;Database=thriftstore_model_test;Username=test;Password=test")
             .Options;
 
         using var context = new DataContext(options);
@@ -37,7 +37,7 @@ public class PostgreSqlCompatibilityTests
     public void Migration_script_does_not_emit_sqlite_or_sql_server_syntax_for_postgresql()
     {
         var options = new DbContextOptionsBuilder<DataContext>()
-            .UseNpgsql("Host=localhost;Database=aliebrecho_migration_test;Username=test;Password=test")
+            .UseNpgsql("Host=localhost;Database=thriftstore_migration_test;Username=test;Password=test")
             .Options;
 
         using var context = new DataContext(options);

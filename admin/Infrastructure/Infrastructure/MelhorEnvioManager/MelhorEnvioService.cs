@@ -27,7 +27,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         _httpClient.DefaultRequestHeaders.Accept.Clear();
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _httpClient.DefaultRequestHeaders.UserAgent.Clear();
-        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("AlieBrecho (admin@root.com)");
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ThriftStore (admin@root.com)");
         _httpClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", ConfigurationPlaceholderResolver.Resolve(_settings.Token) ?? string.Empty);
     }

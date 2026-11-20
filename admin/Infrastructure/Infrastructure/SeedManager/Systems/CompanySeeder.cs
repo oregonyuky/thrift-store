@@ -21,7 +21,7 @@ public class CompanySeeder
         {
             CreatedAtUtc = DateTime.UtcNow,
             IsDeleted = false,
-            Name = "AlieBrecho",
+            Name = "ThriftStore",
             Currency = "BRL",
             Street = "Rua das Flores",
             City = "Sao Paulo",
@@ -30,7 +30,7 @@ public class CompanySeeder
             Country = "Brasil",
             PhoneNumber = "11999999999",
             FaxNumber = "",
-            EmailAddress = "contato@aliebrecho.com",
+            EmailAddress = "contato@thriftstore.com",
             Website = "https://www.aliebrecho.com"
         };
 

@@ -24,7 +24,7 @@ public class ReservationConcurrencyTests
     [Fact]
     public async Task Concurrent_checkout_for_same_product_allows_only_one_reservation()
     {
-        var databasePath = Path.Combine(Path.GetTempPath(), $"aliebrecho-reservation-{Guid.NewGuid():N}.db");
+        var databasePath = Path.Combine(Path.GetTempPath(), $"thriftstore-reservation-{Guid.NewGuid():N}.db");
         var connectionString = $"Data Source={databasePath};Cache=Shared;Default Timeout=10";
 
         try
@@ -80,7 +80,7 @@ public class ReservationConcurrencyTests
     [Fact]
     public async Task Concurrent_payment_confirmations_for_same_product_accept_only_one_bag()
     {
-        var databasePath = Path.Combine(Path.GetTempPath(), $"aliebrecho-payment-{Guid.NewGuid():N}.db");
+        var databasePath = Path.Combine(Path.GetTempPath(), $"thriftstore-payment-{Guid.NewGuid():N}.db");
         var connectionString = $"Data Source={databasePath};Cache=Shared;Default Timeout=10";
 
         try

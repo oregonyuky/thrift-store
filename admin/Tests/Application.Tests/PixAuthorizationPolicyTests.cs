@@ -12,7 +12,7 @@ namespace Application.Tests;
 
 public class PixAuthorizationPolicyTests
 {
-    private const string JwtKey = "alie-brecho-tests-jwt-key-with-at-least-32-characters";
+    private const string JwtKey = "thrift-store-tests-jwt-key-with-at-least-32-characters";
 
     [Theory]
     [InlineData(true)]
@@ -101,8 +101,8 @@ public class PixAuthorizationPolicyTests
     private static TokenSettings CreateTokenSettings() => new()
     {
         Key = JwtKey,
-        Issuer = "alie-brecho-tests",
-        Audience = "alie-brecho-tests",
+        Issuer = "thrift-store-tests",
+        Audience = "thrift-store-tests",
         ExpireInMinute = 30,
         ClockSkewInMinute = 0
     };

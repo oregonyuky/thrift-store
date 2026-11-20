@@ -1,4 +1,4 @@
-# Deploy do AlieBrecho no Railway
+# Deploy do ThriftStore no Railway
 
 O projeto usa o `Dockerfile` da raiz, escuta a porta fornecida pelo Railway e converte `DATABASE_URL` automaticamente para a configuração PostgreSQL do Entity Framework Core.
 
@@ -19,8 +19,8 @@ PORT=8080
 DATABASE_URL=${{Postgres.DATABASE_URL}}
 DatabaseProvider=PostgreSQL
 Jwt__Key=<segredo-aleatorio-com-pelo-menos-32-caracteres>
-Jwt__Issuer=AlieBrecho
-Jwt__Audience=AlieBrecho
+Jwt__Issuer=ThriftStore
+Jwt__Audience=ThriftStore
 AspNetIdentity__DefaultAdmin__Email=<email-do-admin>
 AspNetIdentity__DefaultAdmin__Password=<senha-forte>
 AspNetIdentity__DefaultAdmin__PostCode=<cep-da-loja>
@@ -52,7 +52,7 @@ O health check `/healthz` já está configurado em `railway.json`. O startup cri
 Mantenha API e front no mesmo projeto Railway. No serviço do front, use:
 
 ```text
-AlieBrechoApi__BaseUrl=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:${{api.PORT}}/
+ThriftStoreApi__BaseUrl=http://${{api.RAILWAY_PRIVATE_DOMAIN}}:${{api.PORT}}/
 ```
 
 Substitua `api` pelo nome exato deste serviço. A comunicação interna usa HTTP; o TLS público é terminado pelo Railway.

@@ -27,7 +27,7 @@
 
     window.addEventListener('offline', () => show(true));
     window.addEventListener('online', reconnect);
-    window.addEventListener('aliebrecho:network-error', () => show(!navigator.onLine));
+    window.addEventListener('thriftstore:network-error', () => show(!navigator.onLine));
     button?.addEventListener('click', () => window.location.reload());
 
     if (!navigator.onLine) show(true);
