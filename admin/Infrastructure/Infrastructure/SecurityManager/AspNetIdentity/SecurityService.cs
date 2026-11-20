@@ -155,67 +155,6 @@ public class SecurityService : ISecurityService
 
         };
     }
-    public async Task<RegisterResultDto> RegisterAsync(
-        string email,
-        string password,
-        string confirmPassword,
-        string firstName,
-        string lastName,
-        string companyName = "",
-        CancellationToken cancellationToken = default
-        )
-    {
-        if (!password.Equals(confirmPassword))
-        {
-            throw new Exception($"Password and ConfirmPassword is different.");
-        }
-
-        var user = new ApplicationUser(
-            email,
-            firstName,
-            lastName,
-            companyName
-        );
-
-        user.EmailConfirmed = !_identitySettings.SignIn.RequireConfirmedEmail;
-        var result = await _userManager.CreateAsync(user, password);
-
-        if (!result.Succeeded)
-        {
-            throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
-
-        if (!await _userManager.IsInRoleAsync(user, RoleHelper.GetProfileRole()))
-        {
-            await _userManager.AddToRoleAsync(user, RoleHelper.GetProfileRole());
-        }
-
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-        if (_identitySettings.SignIn.RequireConfirmedEmail)
-        {
-            var request = _httpContextAccessor?.HttpContext?.Request;
-            var callbackUrl = $"{request?.Scheme}://{request?.Host}/Accounts/EmailConfirm?email={user.Email}&code={code}";
-            var encodeCallbackUrl = $"{HtmlEncoder.Default.Encode(callbackUrl)}";
-
-            var emailSubject = $"Confirm your email";
-            var emailMessage = $"Please confirm your account by <a href='{encodeCallbackUrl}'>clicking here</a>.";
-
-            await _emailService.SendEmailAsync(user.Email ?? "", emailSubject, emailMessage);
-
-        }
-
-        return new RegisterResultDto
-        {
-            UserId = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            CompanyName = user.CompanyName
-        };
-    }
-
     public async Task<string> ConfirmEmailAsync(
         string email,
         string code,

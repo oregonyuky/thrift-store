@@ -10,7 +10,7 @@ LoadEnvironmentVariables();
 var builder = WebApplication.CreateBuilder(args);
 
 ConfigureEnvironmentSecrets(builder);
-ConfigureRailway(builder);
+ConfigureRender(builder);
 
 //>>> Create Logs folder for Serilog
 var logPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "app_data", "logs");
@@ -69,11 +69,11 @@ static void LoadEnvironmentVariables()
     }
 }
 
-static void ConfigureRailway(WebApplicationBuilder builder)
+static void ConfigureRender(WebApplicationBuilder builder)
 {
-    if (int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var railwayPort))
+    if (int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var renderPort))
     {
-        builder.WebHost.UseUrls($"http://0.0.0.0:{railwayPort}");
+        builder.WebHost.UseUrls($"http://0.0.0.0:{renderPort}");
     }
 
     var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");

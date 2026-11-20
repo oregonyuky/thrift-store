@@ -13,16 +13,6 @@ public interface ISecurityService
         CancellationToken cancellationToken = default
         );
 
-    public Task<RegisterResultDto> RegisterAsync(
-        string email,
-        string password,
-        string confirmPassword,
-        string firstName,
-        string lastName,
-        string companyName = "",
-        CancellationToken cancellationToken = default
-        );
-
     public Task<string> ConfirmEmailAsync(
         string email,
         string code,

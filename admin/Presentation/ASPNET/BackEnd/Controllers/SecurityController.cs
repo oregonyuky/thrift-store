@@ -47,23 +47,6 @@ public class SecurityController : BaseApiController
     }
 
     [AllowAnonymous]
-    [HttpPost("Register")]
-    public async Task<ActionResult<ApiSuccessResult<RegisterResult>>> RegisterAsync(
-        RegisterRequest request,
-        CancellationToken cancellationToken
-        )
-    {
-        var response = await _sender.Send(request, cancellationToken);
-
-        return Ok(new ApiSuccessResult<RegisterResult>
-        {
-            Code = StatusCodes.Status200OK,
-            Message = $"Success executing {nameof(RegisterAsync)}",
-            Content = response
-        });
-    }
-
-    [AllowAnonymous]
     [HttpGet("ConfirmEmail")]
     public async Task<ActionResult<ApiSuccessResult<ConfirmEmailResult>>> ConfirmEmailAsync(
         [FromQuery] string email,
