@@ -1,0 +1,35 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+*.pfx
+*.p12
+*.pem
+
+# Build output and tooling
+**/bin/
+**/obj/
+**/artifacts/
+**/.vs/
+**/.vscode/
+.dotnet/
+.nuget/
+.migration/
+TestResults/
+*.user
+*.suo
+
+# Runtime data (keep already versioned public sample images)
+*.db
+*.db-shm
+*.db-wal
+*.log
+**/App_Data/
+**/app_data/dataprotection-keys/
+**/app_data/logs/
+**/app_data/images/
+**/app_data/docs/
+**/app_data/site-settings.json
