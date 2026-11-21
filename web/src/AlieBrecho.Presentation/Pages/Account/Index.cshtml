@@ -1,0 +1,49 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@model AlieBrecho.Presentation.Pages.Account.IndexModel
+@{
+    ViewData["Title"] = "Minha conta";
+    var displayName = User.Identity?.Name ?? "Cliente";
+    var email = Model.Email;
+}
+
+<section class="account-shell">
+    <div class="account-page-header">
+        <span class="eyebrow">Minha conta</span>
+        <h1>Ola, <em>@displayName</em></h1>
+    </div>
+
+    <div class="account-panel">
+        <div>
+            <span class="account-panel__label">Nome</span>
+            <strong>@displayName</strong>
+        </div>
+        <div>
+            <span class="account-panel__label">E-mail</span>
+            <strong>@(email ?? "E-mail nao informado")</strong>
+        </div>
+        <a class="button" asp-page="/Orders/Index">Ver meus pedidos</a>
+    </div>
+
+    @if (Model.ActiveBag is not null)
+    {
+        <div class="account-panel bag-profile-panel">
+            <div>
+                <span class="account-panel__label">Sacolinha em andamento</span>
+                <strong>@Model.ActiveBag.ItemCount peca(s)</strong>
+            </div>
+            <div>
+                <span class="account-panel__label">Prazo de envio</span>
+                <strong>@(Model.ActiveBag.ExpirationDate?.ToString("dd/MM/yyyy HH:mm") ?? "A confirmar")</strong>
+            </div>
+            <div>
+                <span class="account-panel__label">Itens pagos</span>
+                <strong>@Model.ActiveBag.TotalItemsValue.ToString("C")</strong>
+            </div>
+            <form method="post" asp-page-handler="FinalizeBag" asp-route-bagId="@Model.ActiveBag.Id" data-finalize-bag-form>
+                <button class="button button-secondary" type="submit">Finalizar sacolinha agora</button>
+            </form>
+        </div>
+    }
+</section>

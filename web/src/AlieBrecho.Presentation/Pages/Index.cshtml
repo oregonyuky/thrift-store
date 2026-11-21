@@ -1,0 +1,298 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<section class="catalog-shell">
+    <section class="hero">
+        <div class="hero__left">
+            <div class="hero__tag">Nova colecao disponivel</div>
+            <h1 class="hero__title">
+                Brecho<br />
+                <em>mais especial</em><br />
+                <strong>incomparavel.</strong>
+            </h1>
+            <p class="hero__desc">Pecas unicas de brecho com curadoria especial para voce. Cada look e uma historia que continua com muito mais estilo.</p>
+            <div class="hero__cta">
+                <a class="btn-primary" href="#pecas">Explorar pecas</a>
+                <a class="btn-text" href="#instrucao">Como funciona</a>
+            </div>
+            <div class="hero__scroll-hint">
+                <span class="scroll-dot"></span>
+                Role para baixo
+            </div>
+        </div>
+        <div class="hero__right">
+            <div class="hero__right-bg"></div>
+            <div class="hero__flowers">Alie</div>
+            <div class="hero__img-frame">
+                <div class="hero__img-card">
+                    @if (!string.IsNullOrWhiteSpace(Model.HeroImageUrl))
+                    {
+                        <img class="hero__configured-image" src="@Model.HeroImageUrl" alt="Destaque Alie Brechó" />
+                    }
+                    else
+                    {
+                        <div class="hero__img-art">AB</div>
+                    }
+                    <div class="hero__img-label">Drop Primavera</div>
+                </div>
+                <div class="hero__img-badge">
+                    <span>-60%</span>
+                    <span>off</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="ribbon ribbon-dark">
+        <div class="ribbon__track">
+            <span class="ribbon__item">Frete gratis acima de R$ 150</span>
+            <span class="ribbon__item">Pecas unicas e selecionadas</span>
+            <span class="ribbon__item">Moda circular com proposito</span>
+            <span class="ribbon__item">Troca em 7 dias</span>
+            <span class="ribbon__item">Curadoria feminina</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="notice notice-floating">@Model.ErrorMessage</div>
+    }
+
+    <section class="section section--alt" id="pecas">
+        <div class="catalog-layout">
+            <aside class="catalog-categories reveal" aria-label="Categorias">
+                <span class="section__eyebrow">Encontre seu estilo</span>
+                <h2 class="catalog-categories__title">Explore por <em>categoria</em></h2>
+                <nav class="catalog-categories__nav">
+                    <button type="button"
+                            class="catalog-category @(Model.Catalog.SelectedCategoryId is null ? "active" : null)"
+                            data-category-filter=""
+                            aria-pressed="@(Model.Catalog.SelectedCategoryId is null ? "true" : "false")">
+                        Todos os garimpos <span>@Model.Catalog.Products.Count</span>
+                    </button>
+                    @foreach (var category in Model.Catalog.Categories.Where(category => category.IsActive))
+                    {
+                        var categoryCount = Model.Catalog.Products.Count(product => product.CategoryId == category.Id);
+                        <button type="button"
+                                class="catalog-category @(Model.Catalog.SelectedCategoryId == category.Id ? "active" : null)"
+                                data-category-filter="@category.Id"
+                                aria-pressed="@(Model.Catalog.SelectedCategoryId == category.Id ? "true" : "false")">
+                            @category.Name <span>@categoryCount</span>
+                        </button>
+                    }
+                </nav>
+            </aside>
+
+            <div class="catalog-products">
+        <div class="products-header reveal">
+            <div>
+                <span class="section__eyebrow">Em destaque</span>
+                <h2 class="section__title">Pecas <em>amadas</em></h2>
+            </div>
+            <span class="products-count">@Model.Catalog.Products.Count(product =>
+                Model.Catalog.SelectedCategoryId is null || product.CategoryId == Model.Catalog.SelectedCategoryId) item(ns)</span>
+        </div>
+
+        <div class="products-grid">
+            @foreach (var product in Model.Catalog.Products)
+            {
+                var off = product.OldPrice is not null && product.OldPrice > 0 && product.DisplayPrice > 0
+                    ? Math.Round((1 - (product.DisplayPrice / product.OldPrice.Value)) * 100)
+                    : 0;
+
+                var productSignature = string.Join(":", new[]
+                {
+                    product.Id ?? string.Empty,
+                    product.DisplayPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture),
+                    product.OldPrice?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                    product.DiscountPercent?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+                    product.ProductAvailable ? "1" : "0",
+                    product.Name,
+                    product.ShortDescription ?? string.Empty,
+                    product.MainImageUrl ?? string.Empty
+                });
+
+                <article class="product-card reveal"
+                         data-product-card-id="@product.Id"
+                         data-product-card-signature="@productSignature"
+                         data-category-id="@product.CategoryId"
+                         hidden="@(Model.Catalog.SelectedCategoryId is not null && Model.Catalog.SelectedCategoryId != product.CategoryId)">
+                    <a class="product-card__media" asp-page="/Products/Details" asp-route-id="@product.Id">
+                        @if (!string.IsNullOrWhiteSpace(product.MainImageUrl))
+                        {
+                            <img class="product-card__img"
+                                 src="@product.MainImageUrl"
+                                 alt="@(product.AltText ?? product.Name)"
+                                 loading="lazy"
+                                 decoding="async"
+                                 width="400"
+                                 height="488" />
+                        }
+                        else
+                        {
+                            <div class="product-card__bg">
+                                <span>@product.Name</span>
+                            </div>
+                        }
+                        @if (off > 0)
+                        {
+                            <div class="product-card__tag">-@off%</div>
+                        }
+                        <span class="product-card__wish" aria-hidden="true">♡</span>
+                    </a>
+                    <div class="product-card__info">
+                        <div class="product-card__brand">Alie Brecho</div>
+                        <h3 class="product-card__name">@product.Name</h3>
+                        <p class="product-card__desc">@product.ShortDescription</p>
+                        <div class="product-card__pricing">
+                            <span class="price-current">@product.DisplayPrice.ToString("C")</span>
+                            @if (product.OldPrice is not null)
+                            {
+                                <span class="price-old">@product.OldPrice.Value.ToString("C")</span>
+                            }
+                        </div>
+                        @if (product.Sizes.Count > 0)
+                        {
+                            <div class="product-card__sizes">
+                                @foreach (var size in product.Sizes.Take(4))
+                                {
+                                    <span class="size-chip">@size.Size</span>
+                                }
+                            </div>
+                        }
+                        <form method="post" asp-page="/Cart/Index" asp-page-handler="Add" asp-route-productId="@product.Id" class="product-card__cart-form" data-cart-form>
+                            <button class="btn-add" type="submit">Adicionar ao carrinho</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section class="section" id="instrucao">
+        <div class="reveal" style="text-align:center;max-width:500px;margin:0 auto">
+            <span class="section__eyebrow">&#10022; Simples assim</span>
+            <h2 class="section__title">Como <em>funciona</em></h2>
+        </div>
+        <div class="steps">
+            <div class="step reveal d1">
+                <div class="step__num">1</div>
+                <span class="step__icon">&#128269;</span>
+                <div class="step__title">Explore</div>
+                <p class="step__desc">Navegue pelas pecas com curadoria especial, filtradas por categoria, tamanho e estilo.</p>
+            </div>
+            <div class="step reveal d2">
+                <div class="step__num">2</div>
+                <span class="step__icon">&#128155;</span>
+                <div class="step__title">Escolha</div>
+                <p class="step__desc">Salve suas favoritas ou adicione direto ao carrinho. Cada peca e unica!</p>
+            </div>
+            <div class="step reveal d3">
+                <div class="step__num">3</div>
+                <span class="step__icon">&#128230;</span>
+                <div class="step__title">Receba</div>
+                <p class="step__desc">Enviamos com embalagem especial e carta personalizada da Alie para voce.</p>
+            </div>
+            <div class="step reveal d4">
+                <div class="step__num">4</div>
+                <span class="step__icon">&#10024;</span>
+                <div class="step__title">Arrase</div>
+                <p class="step__desc">Vista com amor e compartilhe seu look! Cada peca tem uma historia que agora e sua.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="drop-banner reveal" id="drop" data-drop-endpoint="/api/drop-config/active">
+        <div class="drop-banner__left">
+            <p class="drop-banner__eyebrow">Lancamento exclusivo</p>
+            <h2 class="drop-banner__title" id="dropTitle">
+                DROP<br />
+                CHEGANDO<br />
+                <em>EM BREVE</em>
+            </h2>
+            <p class="drop-banner__desc" id="dropSubtitle">
+                A proxima colecao foi feita para quem vive a rua e nao segue regras.
+                Quantidades extremamente limitadas.
+            </p>
+        </div>
+
+        <div class="drop-banner__right">
+            <div class="countdown">
+                <div class="countdown__item">
+                    <span class="countdown__num" id="cd-days">00</span>
+                    <span class="countdown__label">Dias</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__item">
+                    <span class="countdown__num" id="cd-hours">00</span>
+                    <span class="countdown__label">Horas</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__item">
+                    <span class="countdown__num" id="cd-mins">00</span>
+                    <span class="countdown__label">Min</span>
+                </div>
+                <span class="countdown__sep">:</span>
+                <div class="countdown__item">
+                    <span class="countdown__num" id="cd-secs">00</span>
+                    <span class="countdown__label">Seg</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="dropActionButton" type="button">Ser Avisado</button>
+        </div>
+    </section>
+
+    <section class="insta-section" id="instagram" aria-label="Instagram Alie Brecho">
+        <div class="insta-grid" id="instagramGrid" data-instagram-endpoint="/api/instagram/latest">
+            @for (var index = 1; index <= 6; index++)
+            {
+                <a class="insta-card" href="https://www.instagram.com/alie.brecho/" target="_blank" rel="noreferrer">
+                    <div class="insta-card__img">
+                        <img src="/images/instagram/fallback-@(index).svg" alt="Publicacao Alie Brecho @index" loading="lazy" />
+                        <div class="insta-card__overlay">
+                            <div class="insta-card__stats">
+                                <span>0 curtidas</span>
+                                <span>0 comentarios</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+
+        <div class="insta-cta">
+            <a href="https://www.instagram.com/alie.brecho/" target="_blank" rel="noreferrer" class="btn-insta">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                Ver perfil no Instagram
+            </a>
+        </div>
+    </section>
+
+    <section class="newsletter">
+        <div class="newsletter__left">
+            <span class="newsletter__eyebrow">Fique por dentro</span>
+            <h2 class="newsletter__title">Nao perca<br />nenhum <em>drop</em>.</h2>
+            <p class="newsletter__sub">Novidades toda semana, promocoes exclusivas e dicas de looks com pecas unicas.</p>
+        </div>
+        <div class="newsletter__right">
+            <div class="newsletter__form">
+                <input class="newsletter__input" type="text" placeholder="Seu nome" />
+                <input class="newsletter__input" type="email" placeholder="seu@email.com" />
+                <button class="newsletter__btn" id="newsletterBtn" type="button">Quero receber</button>
+            </div>
+            <p class="newsletter__note">Sem spam. So curadoria boa.</p>
+        </div>
+    </section>
+
+</section>

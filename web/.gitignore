@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.cache
+*.log
+run.*.log
+appsettings.Local.json
+src/AlieBrecho.Presentation/App_Data/

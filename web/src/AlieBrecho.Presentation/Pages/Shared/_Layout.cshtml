@@ -1,0 +1,275 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using System.Security.Claims
+@using AlieBrecho.Infrastructure.Api
+@using Microsoft.Extensions.Options
+@inject IAntiforgery Antiforgery
+@inject IOptions<AlieBrechoApiOptions> ApiOptions
+@{
+    var catalogHubUrl = new Uri(ApiOptions.Value.BaseUrl, "hubs/catalog");
+    var ordersHubUrl = new Uri(ApiOptions.Value.BaseUrl, "hubs/orders");
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Alie Brecho</title>
+    <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    <meta name="aliebrecho-customer-id" content="@(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty)" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-drawer" id="cartDrawer" aria-label="Meu carrinho" aria-hidden="true">
+        <div class="cart-header">
+            <div class="cart-title">Meu Carrinho</div>
+            <button class="cart-close" id="cartClose" type="button" aria-label="Fechar carrinho">x</button>
+        </div>
+        <div class="cart-body" id="cartBody">
+            <div class="cart-empty-state" id="cartEmpty">
+                <span aria-hidden="true">Sacola</span>
+                <p>Seu carrinho esta vazio, linda.</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="frete-box">
+                <div class="frete-title">Calcular frete e prazo</div>
+                <div class="frete-sub">Informe seu CEP para ver automaticamente o menor frete</div>
+                <div class="frete-input-row">
+                    <input class="cep-input" type="text" placeholder="00000-000" maxlength="9" id="cepInput" inputmode="numeric" />
+                    <button class="btn-cep" id="calcFreteBtn" type="button">Calcular</button>
+                </div>
+                <div class="frete-error" id="freteError">CEP invalido. Verifique e tente novamente.</div>
+                <div class="frete-results" id="freteResults">
+                    <div class="frete-option">
+                        <div><div class="fo-name" id="shippingCarrierName">Transportadora</div><div class="fo-prazo" id="pacPrazo"></div></div>
+                        <div class="fo-price" id="pacPrice"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cart-total-row">
+                <span class="cart-total-label">Total</span>
+                <span class="cart-total-val" id="cartTotal">R$ 0,00</span>
+            </div>
+            <a class="btn-checkout" asp-page="/Checkout/Index">Finalizar Pedido</a>
+        </div>
+    </aside>
+
+    <div class="cart-overlay" id="bagOverlay"></div>
+    <aside class="cart-drawer bag-drawer" id="bagDrawer" aria-label="Produtos comprados" aria-hidden="true">
+        <div class="cart-header">
+            <div class="cart-title">Minha Sacolinha</div>
+            <button class="cart-close" id="bagClose" type="button" aria-label="Fechar sacolinha">x</button>
+        </div>
+        <div class="cart-body" id="bagBody">
+            <div class="cart-empty-state" id="bagEmpty">
+                <span aria-hidden="true">Pedidos</span>
+                <p>Seus produtos comprados aparecerao aqui depois do pagamento.</p>
+            </div>
+        </div>
+        <div class="cart-footer bag-footer">
+            <div class="cart-bag-panel" id="cartBagPanel" hidden>
+                <div>
+                    <span class="cart-bag-panel__label">Sacolinha em andamento</span>
+                    <strong id="cartBagCount">0 pecas</strong>
+                    <small id="cartBagDeadline">Prazo a confirmar</small>
+                </div>
+            </div>
+            <button class="btn-checkout btn-checkout-secondary" id="finalizeBagBtn" type="button">
+                <svg class="bag-icon btn-checkout__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6.5 8.5h11l-.7 10.1a2 2 0 0 1-2 1.9H9.2a2 2 0 0 1-2-1.9L6.5 8.5Z"></path>
+                    <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
+                </svg>
+                Finalizar sacolinha agora
+            </button>
+            <a class="btn-checkout" asp-page="/Orders/Index">Minhas Compras</a>
+        </div>
+    </aside>
+
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <aside class="mobile-menu" id="mobileMenu" aria-label="Menu mobile">
+        <button class="mobile-menu__close" id="mobileClose" type="button" aria-label="Fechar menu">x</button>
+        <div class="mobile-menu__logo">Alie <em>Brecho</em></div>
+        <ul class="mobile-menu__links">
+            <li><a asp-page="/Index" asp-fragment="categorias">Categorias</a></li>
+            <li><a asp-page="/Index" asp-fragment="pecas">Pecas</a></li>
+            <li><a asp-page="/Index" asp-fragment="instrucao">Instrucao</a></li>
+            <li><a asp-page="/Index" asp-fragment="drop">Drop</a></li>
+            <li><a asp-page="/Index" asp-fragment="instagram">Instagram</a></li>
+            <li><a asp-page="/Cart/Index">Carrinho</a></li>
+        </ul>
+        <div class="mobile-menu__footer">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="mobile-menu__link-button" asp-page="/Account/Index">Minha conta</a>
+                <a class="mobile-menu__link-button" asp-page="/Orders/Index">Minhas Compras</a>
+                <form method="post" asp-page="/Account/Logout">
+                    <button class="mobile-menu__enter" type="submit">Sair</button>
+                </form>
+            }
+            else
+            {
+                <a class="mobile-menu__enter" asp-page="/Account/Login">Entrar na conta</a>
+            }
+        </div>
+    </aside>
+
+    <div class="ribbon ribbon-top" id="topRibbon">
+        <div class="ribbon__track">
+            <span class="ribbon__item">Frete gratis acima de R$ 150</span>
+            <span class="ribbon__item">Pecas unicas e selecionadas</span>
+            <span class="ribbon__item">Moda circular com proposito</span>
+            <span class="ribbon__item">Troca em 7 dias</span>
+            <span class="ribbon__item">Curadoria feminina</span>
+            <span class="ribbon__item">Frete gratis acima de R$ 150</span>
+            <span class="ribbon__item">Pecas unicas e selecionadas</span>
+            <span class="ribbon__item">Moda circular com proposito</span>
+        </div>
+    </div>
+
+    @{
+        var isAuthenticated = User.Identity?.IsAuthenticated == true;
+        var displayName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Email)?.Value ?? "Cliente";
+        var nameParts = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var initials = nameParts.Length switch
+        {
+            0 => "A",
+            1 => nameParts[0][..1].ToUpperInvariant(),
+            _ => string.Concat(nameParts[0][..1], nameParts[^1][..1]).ToUpperInvariant()
+        };
+    }
+
+    <header>
+        <nav id="navbar" aria-label="Principal">
+            <a class="nav__logo" asp-page="/Index">Alie <em>Brecho</em></a>
+            <ul class="nav__links">
+                <li><a asp-page="/Index" asp-fragment="categorias">Categorias</a></li>
+                <li><a asp-page="/Index" asp-fragment="pecas">Pecas</a></li>
+                <li><a asp-page="/Index" asp-fragment="instrucao">Instrucao</a></li>
+                <li><a asp-page="/Index" asp-fragment="drop">Drop</a></li>
+                <li><a asp-page="/Index" asp-fragment="instagram">Instagram</a></li>
+            </ul>
+            <div class="nav__actions">
+                <button class="nav__icon cart-nav-button" id="cartBtn" type="button" aria-label="Abrir carrinho">
+                    <img class="cart-nav-icon" src="/images/icons/carrinho.png" alt="" aria-hidden="true" />
+                    <span class="sr-only">Carrinho</span>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </button>
+                <button class="nav__icon cart-nav-button" id="bagBtn" type="button" aria-label="Ver produtos comprados">
+                    <svg class="nav-svg bag-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6.5 8.5h11l-.7 10.1a2 2 0 0 1-2 1.9H9.2a2 2 0 0 1-2-1.9L6.5 8.5Z"></path>
+                        <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
+                    </svg>
+                    <span class="sr-only">Produtos comprados</span>
+                    <span class="cart-badge" id="bagBadge">0</span>
+                </button>
+                <div class="account-menu" id="accountMenu">
+                    <button class="account-menu__trigger" id="accountMenuToggle" type="button" aria-label="Abrir menu da conta" aria-haspopup="true" aria-expanded="false">
+                        @if (isAuthenticated)
+                        {
+                            <span class="account-avatar">@initials</span>
+                        }
+                        else
+                        {
+                            <svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
+                                <path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
+                            </svg>
+                        }
+                    </button>
+                    <div class="account-menu__dropdown" role="menu" aria-labelledby="accountMenuToggle">
+                        @if (isAuthenticated)
+                        {
+                            <a role="menuitem" asp-page="/Account/Index">Minha conta</a>
+                            <a role="menuitem" asp-page="/Orders/Index">Minhas Compras</a>
+                            <form method="post" asp-page="/Account/Logout">
+                                <button role="menuitem" type="submit">Sair</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a role="menuitem" asp-page="/Account/Login">Entrar</a>
+                            <a role="menuitem" asp-page="/Account/Register">Criar conta</a>
+                        }
+                    </div>
+                </div>
+                <button class="hamburger" id="hamburger" type="button" aria-label="Abrir menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer" id="contato">
+        <div class="footer__top">
+            <div>
+                <span class="footer__logo">Alie <em>Brecho</em></span>
+                <p class="footer__desc">Moda circular com curadoria, afeto e proposito. Feita para pecas que merecem uma nova historia.</p>
+                <div class="footer__socials">
+                    <a class="social" href="https://www.instagram.com/alie.brecho/" target="_blank" rel="noreferrer">IG</a>
+                    <a class="social" href="#">WA</a>
+                    <a class="social" href="#">PI</a>
+                </div>
+            </div>
+            <div>
+                <p class="footer__col-title">Loja</p>
+                <ul class="footer__list">
+                    <li><a asp-page="/Index">Produtos</a></li>
+                    <li><a asp-page="/Cart/Index">Carrinho</a></li>
+                    <li><a asp-page="/Checkout/Index">Checkout</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer__col-title">Atendimento</p>
+                <ul class="footer__list">
+                    <li><a href="#">Segunda a sexta</a></li>
+                    <li><a href="#">contato@aliebrecho.com.br</a></li>
+                    <li><a href="#">Trocas e devolucoes</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer__col-title">Institucional</p>
+                <ul class="footer__list">
+                    <li><a href="#">Nossa curadoria</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer__col-title">Ajuda</p>
+                <ul class="footer__list">
+                    <li><a asp-page="/Ajuda/FaleConosco">Fale conosco</a></li>
+                    <li><a asp-page="/Ajuda/DuvidasFrequentes">Dúvidas Frequentes</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer__bottom">
+            <p class="footer__copy">2026 Alie Brecho. Moda circular selecionada com carinho.</p>
+            <div class="footer__pays">
+                <span class="pay"><img src="~/images/icons/pix.svg" alt="Pix" /></span>
+                <span class="pay"><img src="~/images/icons/cartao.png" alt="Cartao" /></span>
+                <span class="pay"><img src="~/images/icons/visa.png" alt="Visa" /></span>
+                <span class="pay"><img src="~/images/icons/mercadopago.png" alt="Mercado Pago" /></span>
+                <span class="pay"><img src="~/images/icons/melhorenvio.png" alt="Melhor Envio" /></span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        window.alieBrechoCatalogHubUrl = "@catalogHubUrl";
+        window.alieBrechoOrdersHubUrl = "@ordersHubUrl";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
