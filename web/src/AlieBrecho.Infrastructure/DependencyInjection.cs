@@ -12,8 +12,18 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.Configure<AlieBrechoApiOptions>(
-            configuration.GetSection(AlieBrechoApiOptions.SectionName));
+        services.AddOptions<AlieBrechoApiOptions>()
+            .Bind(configuration.GetSection(AlieBrechoApiOptions.SectionName))
+            // Keep the original section and its endpoint paths; the monorepo alias wins.
+            .Bind(configuration.GetSection("ThriftStoreApi"))
+            .Validate(options => options.BaseUrl is { IsAbsoluteUri: true } uri
+                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+                && uri.AbsoluteUri.EndsWith('/')
+                && string.IsNullOrEmpty(uri.UserInfo)
+                && string.IsNullOrEmpty(uri.Query)
+                && string.IsNullOrEmpty(uri.Fragment),
+                "ThriftStoreApi:BaseUrl (or AlieBrechoApi:BaseUrl) must be an absolute HTTP(S) URL ending in / without credentials, query or fragment.")
+            .ValidateOnStart();
 
         services.AddTransient<AlieBrechoApiAuthorizationHandler>();
         services.AddHttpClient<AlieBrechoApiClient>((serviceProvider, client) =>

@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+# Keep the existing PostgreSQL instance: this Blueprint creates no database.
+services:
+  - type: web
+    name: thrift-store-admin
+    runtime: docker
+    plan: starter
+    numInstances: 1
+    dockerfilePath: ./admin/Dockerfile
+    dockerContext: ./admin
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - admin/**
+        - render.yaml
+    disk:
+      name: thrift-store-admin-data
+      mountPath: /app/wwwroot/app_data
+      sizeGB: 1
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        sync: false
+      - key: DatabaseInitialization__Enabled
+        value: "false"
+      - key: IsDemoVersion
+        value: "false"
+      - key: Jwt__Key
+        sync: false
+      - key: Jwt__Issuer
+        sync: false
+      - key: Jwt__Audience
+        sync: false
+      - key: AspNetIdentity__DefaultAdmin__Email
+        sync: false
+      - key: AspNetIdentity__DefaultAdmin__PostCode
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        sync: false
+
+  - type: web
+    name: thrift-store-web
+    runtime: docker
+    plan: starter
+    numInstances: 1
+    dockerfilePath: ./web/Dockerfile
+    dockerContext: ./web
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - web/**
+        - render.yaml
+    disk:
+      name: thrift-store-web-data
+      mountPath: /app/App_Data
+      sizeGB: 1
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: PORT
+        value: "10000"
+      # This URL also reaches browsers (images and SignalR): use public HTTPS.
+      - key: ThriftStoreApi__BaseUrl
+        sync: false

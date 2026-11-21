@@ -26,6 +26,7 @@ RUN mkdir -p /app/wwwroot/app_data/images \
     && chown -R "$APP_UID:$APP_UID" /app/wwwroot/app_data
 
 ENV ASPNETCORE_ENVIRONMENT=Production \
+    ASPNETCORE_HTTP_PORTS=8080 \
     DOTNET_EnableDiagnostics=0
 EXPOSE 8080
 USER $APP_UID

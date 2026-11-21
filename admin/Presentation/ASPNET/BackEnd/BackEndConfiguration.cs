@@ -111,16 +111,17 @@ public static class BackEndConfiguration
         IConfiguration configuration
         )
     {
-        // >>> Create database
-        host.CreateDatabase();
-
-        //seed database with system data
-        host.SeedSystemData();
-
-        //seed database with demo data
-        if (configuration.GetValue<bool>("IsDemoVersion"))
+        // Existing databases must not be changed as a side effect of moving repositories.
+        // Development keeps the original bootstrap; production requires an explicit opt-in.
+        if (configuration.GetValue("DatabaseInitialization:Enabled", environment.IsDevelopment()))
         {
-            host.SeedDemoData();
+            host.CreateDatabase();
+            host.SeedSystemData();
+
+            if (configuration.GetValue<bool>("IsDemoVersion"))
+            {
+                host.SeedDemoData();
+            }
         }
 
         if (environment.IsDevelopment())

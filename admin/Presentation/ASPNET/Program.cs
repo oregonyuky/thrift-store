@@ -79,6 +79,24 @@ static void ConfigureRender(WebApplicationBuilder builder)
     var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
     if (string.IsNullOrWhiteSpace(databaseUrl))
     {
+        // Respect the standard ASP.NET configuration, including environment variables.
+        if (!string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("DefaultConnection")))
+        {
+            if (string.IsNullOrWhiteSpace(builder.Configuration["DatabaseProvider"]))
+            {
+                throw new InvalidOperationException("DatabaseProvider is required with ConnectionStrings__DefaultConnection.");
+            }
+
+            return;
+        }
+
+        if (!builder.Environment.IsDevelopment())
+        {
+            throw new InvalidOperationException(
+                "Configure DATABASE_URL or DatabaseProvider and ConnectionStrings__DefaultConnection. " +
+                "The SQLite fallback is available only in Development.");
+        }
+
         builder.Configuration["DatabaseProvider"] = "Sqlite";
         builder.Configuration["ConnectionStrings:DefaultConnection"] = "Data Source=app.db";
         return;
