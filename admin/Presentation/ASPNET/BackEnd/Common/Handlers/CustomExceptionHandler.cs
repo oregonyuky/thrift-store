@@ -1,0 +1,77 @@
+﻿using ASPNET.BackEnd.Common.Models;
+using Microsoft.AspNetCore.Diagnostics;
+using Application.Common;
+
+namespace ASPNET.BackEnd.Common.Handlers;
+
+public class CustomExceptionHandler : IExceptionHandler
+{
+    private readonly Dictionary<Type, Func<HttpContext, Exception, Task>> _exceptionHandlers;
+    private readonly ILogger<CustomExceptionHandler> _logger;
+
+    public CustomExceptionHandler(ILogger<CustomExceptionHandler> logger)
+    {
+        _logger = logger;
+        _exceptionHandlers = new()
+            {
+                { typeof(ProductUnavailableException), HandleProductUnavailableException },
+                { typeof(Exception), HandleException },
+            };
+    }
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    {
+        var exceptionType = exception.GetType();
+
+        if (_exceptionHandlers.ContainsKey(exceptionType))
+        {
+            await _exceptionHandlers[exceptionType].Invoke(httpContext, exception);
+            return true;
+        }
+        else
+        {
+            await HandleException(httpContext, exception);
+            return true;
+        }
+
+    }
+
+    private static async Task HandleProductUnavailableException(HttpContext httpContext, Exception ex)
+    {
+        httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+        httpContext.Response.ContentType = "application/json";
+        await httpContext.Response.WriteAsJsonAsync(new ApiErrorResult
+        {
+            Code = StatusCodes.Status409Conflict,
+            Message = ex.Message,
+            Error = new Error(ex.InnerException?.Message, ex.Source, ex.StackTrace, ex.GetType().Name)
+        });
+    }
+
+    private async Task HandleException(HttpContext httpContext, Exception ex)
+    {
+        _logger.LogError(ex, "Erro não tratado ao processar {Method} {Path}.",
+            httpContext.Request.Method,
+            httpContext.Request.Path);
+
+        var statusCode = httpContext.Response.StatusCode != 200
+            ? httpContext.Response.StatusCode
+            : StatusCodes.Status500InternalServerError;
+
+        var errorMessage = ex is InvalidOperationException
+            ? ex.Message
+            : "Ocorreu um erro interno. Tente novamente mais tarde.";
+
+        var result = new ApiErrorResult
+        {
+            Code = statusCode,
+            Message = errorMessage,
+            Error = null
+        };
+
+        httpContext.Response.StatusCode = statusCode;
+        httpContext.Response.ContentType = "application/json";
+        await httpContext.Response.WriteAsJsonAsync(result);
+    }
+
+}
+

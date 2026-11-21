@@ -1,0 +1,110 @@
+﻿using Application.Common.Repositories;
+using Domain.Entities;
+using Infrastructure.DataAccessManager.EFCore.Configurations;
+using Infrastructure.SecurityManager.AspNetIdentity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace Infrastructure.DataAccessManager.EFCore.Contexts;
+
+public class DataContext : IdentityDbContext<ApplicationUser>, IEntityDbSet
+{
+    public DataContext(DbContextOptions<DataContext> options) : base(options)
+    {
+    }
+    public DbSet<FileImage> FileImage { get; set; }
+    public DbSet<FileDocument> FileDocument { get; set; }
+    public DbSet<Token> Token { get; set; }
+    public DbSet<Company> Company { get; set; }
+    public DbSet<Customer> Customer { get; set; }
+
+    public DbSet<Category> Category { get; set; }
+    public DbSet<Product> Product { get; set; }
+    public DbSet<ProductSize> ProductSize { get; set; }
+    public DbSet<PaymentType> PaymentType { get; set; }
+    public DbSet<Order> Order { get; set; }
+    public DbSet<Payment> Payment { get; set; }
+    public DbSet<PaymentDetail> PaymentDetail { get; set; }
+    public DbSet<ShippingDetail> ShippingDetail { get; set; }
+    public DbSet<OrderDetail> OrderDetail { get; set; }
+    public DbSet<Bag> Bag { get; set; }
+    public DbSet<BagItem> BagItem { get; set; }
+    public DbSet<BagSettings> BagSettings { get; set; }
+    public DbSet<BagExpirationHistory> BagExpirationHistory { get; set; }
+    public DbSet<ShippingBox> ShippingBox { get; set; }
+    public DbSet<PackageCategory> PackageCategory { get; set; }
+    public DbSet<DropConfig> DropConfig { get; set; }
+    public DbSet<ContactMessage> ContactMessage { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new FileImageConfiguration());
+        modelBuilder.ApplyConfiguration(new FileDocumentConfiguration());
+        modelBuilder.ApplyConfiguration(new TokenConfiguration());
+        modelBuilder.ApplyConfiguration(new CompanyConfiguration());
+        modelBuilder.ApplyConfiguration(new ProductConfiguration());
+        modelBuilder.ApplyConfiguration(new ProductSizeConfiguration());
+        modelBuilder.ApplyConfiguration(new CustomerConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new BagConfiguration());
+        modelBuilder.ApplyConfiguration(new BagItemConfiguration());
+        modelBuilder.ApplyConfiguration(new BagSettingsConfiguration());
+        modelBuilder.ApplyConfiguration(new BagExpirationHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new ShippingBoxConfiguration());
+        modelBuilder.ApplyConfiguration(new PackageCategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new DropConfigConfiguration());
+        modelBuilder.ApplyConfiguration(new ContactMessageConfiguration());
+
+        var activeReservationFilter = Database.IsNpgsql()
+            ? "\"ProductId\" IS NOT NULL AND NOT \"IsDeleted\" AND \"IsReserved\""
+            : Database.IsSqlite()
+                ? "\"ProductId\" IS NOT NULL AND \"IsDeleted\" = 0 AND \"IsReserved\" = 1"
+                : "[ProductId] IS NOT NULL AND [IsDeleted] = 0 AND [IsReserved] = 1";
+
+        modelBuilder.Entity<BagItem>()
+            .HasIndex(x => x.ProductId)
+            .IsUnique()
+            .HasDatabaseName("UX_BagItem_ActiveReservation_ProductId")
+            .HasFilter(activeReservationFilter);
+
+        if (!Database.IsSqlServer())
+        {
+            modelBuilder.Entity<Product>()
+                .Property(x => x.RowVersion)
+                .IsConcurrencyToken()
+                .ValueGeneratedNever();
+        }
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        SetApplicationManagedRowVersions();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        SetApplicationManagedRowVersions();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void SetApplicationManagedRowVersions()
+    {
+        if (Database.IsSqlServer())
+        {
+            return;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<Product>()
+                     .Where(x => x.State is EntityState.Added or EntityState.Modified))
+        {
+            entry.Property(x => x.RowVersion).CurrentValue = Guid.NewGuid().ToByteArray();
+        }
+    }
+}
