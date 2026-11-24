@@ -2,23 +2,25 @@
 
 Monorepo com duas aplicações ASP.NET Core independentes: o administrativo/API e a loja pública (antiga Alie Brechó, agora Thrift Brechó). Cada aplicação mantém sua solução, camadas, processo, autenticação e imagem Docker. Não há referências de projeto entre `admin/` e `web/`.
 
-## Novas interfaces em Next.js (Thrift Brechó)
+## Loja e painel novos em Next.js (Thrift Brechó)
 
-A loja e o painel foram refeitos em **Next.js 16 + TypeScript + Tailwind CSS 4**, com o visual descrito em [DESIGN.md](DESIGN.md). Os dois apps conversam com a **mesma API .NET** de `admin/`, que não mudou. As telas Razor antigas continuam no repositório e no ar até a troca ser feita no Render.
+A loja e o painel da equipe foram refeitos em **Next.js 16 + TypeScript + Tailwind CSS 4**, com o visual descrito em [DESIGN.md](DESIGN.md). Os dois ficam no **mesmo app**, em `storefront/`, e usam a **mesma API .NET** de `admin/`, que não mudou.
 
-| Pasta | O que é | Porta local |
-| --- | --- | --- |
-| `storefront/` | Loja pública: vitrine, peça, carrinho e sacolinha, checkout com Pix, minhas compras, conta, ajuda e fale conosco. Substitui `web/`. | 5002 |
-| `dashboard/` | Painel da equipe: visão geral, pedidos (com etiqueta Melhor Envio em 3 passos), sacolinhas e produtos (cadastro com fotos). | 5004 |
+| Endereço | O que é |
+| --- | --- |
+| `/` | Loja: vitrine, peça, carrinho e sacolinha, checkout com Pix, minhas compras, conta, ajuda, fale conosco. |
+| `/painel` | Painel da equipe: visão geral, pedidos (etiqueta Melhor Envio em 3 passos), sacolinhas e produtos (cadastro com fotos). Login separado do das clientes. |
 
-Como funcionam:
+No Render, o serviço `thrift-store-web` agora publica `storefront/` (veja `render.yaml`). A loja Razor antiga continua em `web/` só como referência; ela não é mais publicada.
 
-- Todas as chamadas à API saem do **servidor** Next.js (`src/lib/api.ts`). O token JWT fica num cookie `httpOnly` assinado com `SESSION_SECRET` e nunca chega ao JavaScript do navegador. Por isso não é preciso CORS para esses apps.
-- A loja usa `api/Customer/Login` (clientes) e o painel usa `api/Security/Login` (equipe). O painel renova o token sozinho com `api/Security/RefreshToken` (`src/proxy.ts`).
-- O carrinho fica num cookie do navegador (sobrevive a reinícios do servidor) e vai junto quando a cliente entra na conta.
+Como funciona:
+
+- Todas as chamadas à API saem do **servidor** Next.js (`src/lib/api.ts`). Os tokens ficam em cookies `httpOnly` assinados com `SESSION_SECRET` e nunca chegam ao JavaScript do navegador, por isso não há mudança de CORS.
+- Clientes entram por `api/Customer/Login`; a equipe por `api/Security/Login`, e o token da equipe é renovado sozinho com `api/Security/RefreshToken` (`src/proxy.ts`).
+- O carrinho fica num cookie do navegador e vai junto quando a cliente entra na conta.
 - Endereços antigos da loja (`/Products/Details?id=…`, `/Cart`, `/Account/Login`…) redirecionam para os novos.
-- As telas do painel que ainda não foram refeitas (clientes, mensagens, categorias, drops, caixas, site, usuários e mudança manual de status de pedido) abrem o painel Razor antigo, servido pela própria API. Ele pede login separado.
-- A atualização em tempo real via SignalR foi trocada por consulta: o status do Pix é verificado a cada 5 segundos e as páginas buscam dados novos a cada visita.
+- Telas do painel ainda não refeitas (clientes, mensagens, categorias, drops, caixas, site, usuários e mudança manual de status de pedido) abrem o painel Razor antigo, servido pela API. Ele pede login próprio.
+- O tempo real via SignalR virou consulta: o status do Pix é verificado a cada 5 segundos e as páginas buscam dados novos a cada visita.
 
 ### Rodar localmente
 
@@ -28,61 +30,17 @@ Com a API rodando em `http://localhost:5000` (seção abaixo):
 cd storefront
 cp .env.example .env.local   # preencha SESSION_SECRET (openssl rand -hex 32)
 npm install
-npm run dev                  # http://localhost:5002
-
-cd ../dashboard
-cp .env.example .env.local
-npm install
-npm run dev                  # http://localhost:5004
+npm run dev                  # loja em http://localhost:5002 e painel em http://localhost:5002/painel
 ```
 
-Variáveis (veja `.env.example` de cada app):
+| Variável | Uso |
+| --- | --- |
+| `THRIFT_API_URL` (ou `ThriftStoreApi__BaseUrl`, o nome já usado no Render) | URL da API terminada em `/`. Precisa ser pública (HTTPS): o navegador carrega as fotos dela. |
+| `SESSION_SECRET` | 32+ caracteres aleatórios. Obrigatório em produção; no Render é gerado pelo Blueprint. |
+| `INSTAGRAM_URL`, `INSTAGRAM_ACCOUNT_ID`, `INSTAGRAM_ACCESS_TOKEN` | Opcionais: link do perfil e feed real na home. |
+| `LEGACY_ADMIN_URL` | Opcional: endereço do painel Razor antigo (padrão: a URL da API). |
 
-| Variável | App | Uso |
-| --- | --- | --- |
-| `THRIFT_API_URL` | ambos | URL da API terminada em `/`. Precisa ser pública (HTTPS): o navegador carrega as fotos dela. |
-| `SESSION_SECRET` | ambos | 32+ caracteres aleatórios, um valor diferente por app. Obrigatório em produção. |
-| `INSTAGRAM_URL`, `INSTAGRAM_ACCOUNT_ID`, `INSTAGRAM_ACCESS_TOKEN` | loja | Opcionais: link do perfil e feed real no rodapé da home. |
-| `LEGACY_ADMIN_URL` | painel | Opcional: onde está o painel Razor antigo (padrão: `THRIFT_API_URL`). |
-| `STOREFRONT_URL` | painel | Opcional: link "Ver loja" no topo. |
-
-### Publicar no Render
-
-O `render.yaml` **não foi alterado**: os serviços atuais seguem iguais. Para colocar os novos no ar, crie dois Web Services Docker (ou acrescente ao Blueprint), por exemplo:
-
-```yaml
-  - type: web
-    name: thrift-store-storefront
-    runtime: docker
-    plan: starter
-    dockerfilePath: ./storefront/Dockerfile
-    dockerContext: ./storefront
-    healthCheckPath: /healthz
-    buildFilter:
-      paths: [storefront/**]
-    envVars:
-      - key: THRIFT_API_URL
-        sync: false
-      - key: SESSION_SECRET
-        generateValue: true
-
-  - type: web
-    name: thrift-store-dashboard
-    runtime: docker
-    plan: starter
-    dockerfilePath: ./dashboard/Dockerfile
-    dockerContext: ./dashboard
-    healthCheckPath: /healthz
-    buildFilter:
-      paths: [dashboard/**]
-    envVars:
-      - key: THRIFT_API_URL
-        sync: false
-      - key: SESSION_SECRET
-        generateValue: true
-```
-
-Os apps não precisam de disco. Depois de testar, aponte o domínio da loja para `thrift-store-storefront` e desligue `thrift-store-web`. Imagens locais: `docker build -t thrift-storefront ./storefront` e `docker run -p 5002:3000 --env-file storefront/.env.local thrift-storefront`.
+Imagem Docker local: `docker build -t thrift-storefront ./storefront` e `docker run -p 5002:3000 --env-file storefront/.env.local thrift-storefront`.
 
 ## Estrutura e tecnologias
 
@@ -105,8 +63,7 @@ thrift-store/
 │   ├── AlieBrechoFront.slnx
 │   ├── Dockerfile
 │   └── .dockerignore
-├── storefront/          (loja Next.js)
-├── dashboard/           (painel Next.js)
+├── storefront/          (loja + /painel em Next.js — publicado no Render)
 ├── docs/history/
 ├── scripts/smoke.py
 ├── render.yaml

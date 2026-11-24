@@ -46,28 +46,29 @@ services:
 
   - type: web
     name: thrift-store-web
+    # Loja nova (Next.js) com o painel da equipe em /painel. A loja Razor antiga continua em web/, fora do deploy.
     runtime: docker
     plan: starter
     numInstances: 1
-    dockerfilePath: ./web/Dockerfile
-    dockerContext: ./web
+    dockerfilePath: ./storefront/Dockerfile
+    dockerContext: ./storefront
     healthCheckPath: /healthz
     autoDeployTrigger: commit
     buildFilter:
       paths:
-        - web/**
+        - storefront/**
         - render.yaml
+    # Mantido do serviço anterior para não apagar dados; a loja nova não grava em disco.
     disk:
       name: thrift-store-web-data
       mountPath: /app/App_Data
       sizeGB: 1
     envVars:
-      - key: ASPNETCORE_ENVIRONMENT
-        value: Production
-      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        value: "true"
       - key: PORT
         value: "10000"
-      # This URL also reaches browsers (images and SignalR): use public HTTPS.
+      # Mesmo valor de antes: URL pública HTTPS da API (admin), terminada em /.
       - key: ThriftStoreApi__BaseUrl
         sync: false
+      # Assina os cookies de login da loja e do painel.
+      - key: SESSION_SECRET
+        generateValue: true

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Footer, Header, MobileNav } from "@/components/SiteChrome";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,18 +10,11 @@ export const viewport: Viewport = {
   themeColor: "#2a1f1e",
 };
 
+// The store chrome lives in (loja)/layout.tsx and the staff panel in painel/layout.tsx.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen bg-paper">
-        <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-card focus:px-4 focus:py-2">
-          Pular para o conteúdo
-        </a>
-        <Header />
-        <main id="conteudo">{children}</main>
-        <Footer />
-        <MobileNav />
-      </body>
+      <body className="min-h-screen bg-paper">{children}</body>
     </html>
   );
 }

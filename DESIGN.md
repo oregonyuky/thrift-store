@@ -1,7 +1,7 @@
 ---
 version: beta
 name: Thrift Brechó
-description: Sistema visual da loja (storefront/) e do painel (dashboard/) em Next.js — editorial e acolhedor na loja, denso e calmo no painel, com a mesma identidade.
+description: Sistema visual da loja e do painel (/painel) do app Next.js em storefront/ — editorial e acolhedor na loja, denso e calmo no painel, com a mesma identidade.
 colors:
   paper: "#F7F2EA"
   admin-ground: "#F4EFE8"
@@ -64,7 +64,7 @@ components:
 
 # Thrift Brechó — sistema visual
 
-Este arquivo vale para as interfaces Next.js: `storefront/` (loja) e `dashboard/` (painel). Os tokens estão implementados em `src/app/globals.css` de cada app (bloco `@theme` do Tailwind CSS 4). A referência visual aprovada fica no canvas de design do projeto.
+Este arquivo vale para o app Next.js em `storefront/`: a loja e o painel da equipe em `/painel`. Os tokens estão em `src/app/globals.css` (bloco `@theme` do Tailwind CSS 4); os ajustes mais densos do painel ficam em `src/app/painel/admin.css`, sob a classe `.admin`. A referência visual aprovada fica no canvas de design do projeto.
 
 As telas Razor antigas (`web/` e o painel em `admin/Presentation/ASPNET/FrontEnd`) seguem com o visual anterior até serem desligadas; não aplique este sistema nelas.
 

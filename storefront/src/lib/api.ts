@@ -1,4 +1,5 @@
 import "server-only";
+import { apiBaseUrl } from "./api-base";
 
 /**
  * Server-side client for the ThriftStore .NET API (admin/).
@@ -12,10 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-export function apiBaseUrl(): string {
-  const raw = process.env.THRIFT_API_URL || "http://localhost:5000/";
-  return raw.endsWith("/") ? raw : `${raw}/`;
-}
+export { apiBaseUrl };
 
 type Json = Record<string, unknown>;
 
@@ -111,6 +109,50 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   return unwrap<T>(parsed);
+}
+
+/** Multipart upload (FileImage/UploadImage). */
+export async function apiUpload<T>(path: string, form: FormData, token: string): Promise<T> {
+  const response = await fetch(new URL(path, apiBaseUrl()), {
+    method: "POST",
+    headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
+    body: form,
+    cache: "no-store",
+    signal: AbortSignal.timeout(60000),
+  }).catch(() => {
+    throw new ApiError("Não foi possível enviar a imagem. Tente novamente.", 503);
+  });
+  const text = await response.text();
+  let parsed: unknown = text;
+  try {
+    parsed = text ? JSON.parse(text) : undefined;
+  } catch {
+    /* plain text */
+  }
+  if (!response.ok) {
+    throw new ApiError(findMessage(parsed) || (typeof parsed === "string" && parsed) || `Erro ${response.status} ao enviar a imagem.`, response.status);
+  }
+  return unwrap<T>(parsed);
+}
+
+/** Raw response for binary downloads (shipping label PDF). */
+export async function apiBinary(path: string, token: string): Promise<Response> {
+  const response = await fetch(new URL(path, apiBaseUrl()), {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    let parsed: unknown = text;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      /* plain text */
+    }
+    throw new ApiError(findMessage(parsed) || `Erro ${response.status} ao baixar o arquivo.`, response.status);
+  }
+  return response;
 }
 
 /** Same rule as the Razor store: a bare file name is served by FileImage/GetImage. */

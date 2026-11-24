@@ -5,6 +5,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  experimental: {
+    // Product photos are uploaded through a server action in /painel/produtos.
+    serverActions: { bodySizeLimit: "30mb" },
+  },
 };
 
 export default nextConfig;

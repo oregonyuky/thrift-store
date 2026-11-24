@@ -22,4 +22,5 @@ COPY --from=build --chown=app:app /app/.next/standalone ./
 COPY --from=build --chown=app:app /app/.next/static ./.next/static
 USER app
 EXPOSE 3000
-CMD ["node", "server.js"]
+# Some hosts inject their own HOSTNAME; the server must still listen on all interfaces.
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 exec node server.js"]
