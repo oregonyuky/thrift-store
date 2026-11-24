@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { ApiError, apiRequest } from "@/lib/api";
+import { loginFailure } from "@/lib/login-errors";
 import { clearSession, getCartIds, getSession, jwtExpiry, saveCartIds, setSession } from "@/lib/session";
 import { getActiveBag, getAvailableProducts, getCustomer, qrImage } from "@/lib/store";
 
@@ -62,7 +63,9 @@ interface LoginData {
 
 async function loginWithApi(email: string, password: string, remember: boolean) {
   const data = await apiRequest<LoginData>("api/Customer/Login", { method: "POST", body: { email, password } });
-  if (!data?.accessToken || !data.userId) throw new ApiError("E-mail ou senha inválidos.", 401);
+  if (!data?.accessToken || !data.userId) {
+    throw new ApiError("E-mail ou senha inválidos. Conta da equipe? Entre em /painel/login.", 401);
+  }
   const name = [data.firstName, data.lastName].filter(Boolean).join(" ") || data.email || email;
   await setSession(
     {
@@ -84,7 +87,7 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
   try {
     await loginWithApi(email, password, form.get("remember") === "on");
   } catch (error) {
-    return { error: errorMessage(error, "E-mail ou senha inválidos.") };
+    return { error: loginFailure(error, "loja") };
   }
   redirect(safeReturnUrl(text(form, "returnUrl")));
 }

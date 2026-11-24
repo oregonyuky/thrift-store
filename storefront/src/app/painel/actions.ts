@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiError, apiRequest, apiUpload } from "@/lib/api";
+import { loginFailure } from "@/lib/login-errors";
 import { getBags, getBagSettings, getProduct, type ProductFull } from "@/lib/painel/data";
 import { sessionFromTokens } from "@/lib/painel/seal";
 import { requireSession, setSession } from "@/lib/painel/session";
@@ -29,15 +30,13 @@ export async function login(_: ActionResult, form: FormData): Promise<ActionResu
       body: { email, password },
     });
     const session = sessionFromTokens(data, email);
-    if (!session) return { error: "E-mail ou senha inválidos." };
+    if (!session) return { error: "E-mail ou senha inválidos. Conta de cliente? Entre pela loja." };
     if (session.roles.length > 0 && session.roles.every((r) => r.toLowerCase() === "customer")) {
       return { error: "Esta conta não tem acesso ao painel." };
     }
     await setSession(session);
   } catch (error) {
-    // The API answers bad credentials with a generic server error.
-    if (error instanceof ApiError && error.status >= 500) return { error: "E-mail ou senha inválidos." };
-    return fail(error, "Não foi possível entrar. Tente novamente.");
+    return { error: loginFailure(error, "painel") };
   }
   redirect("/painel");
 }
