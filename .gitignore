@@ -33,3 +33,9 @@ TestResults/
 **/app_data/images/
 **/app_data/docs/
 **/app_data/site-settings.json
+
+# Next.js apps (storefront/, dashboard/)
+**/node_modules/
+**/.next/
+**/next-env.d.ts
+**/*.tsbuildinfo

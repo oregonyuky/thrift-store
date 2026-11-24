@@ -1,346 +1,112 @@
 ---
-version: alpha
-name: ThriftStore Operations Dashboard
-description: A precise, accessible design system for dense administrative dashboards, operational metrics, tables, charts, and stateful workflows.
+version: beta
+name: Thrift Brechó
+description: Sistema visual da loja (storefront/) e do painel (dashboard/) em Next.js — editorial e acolhedor na loja, denso e calmo no painel, com a mesma identidade.
 colors:
-  primary: "#1D4ED8"
-  primary-hover: "#1E40AF"
-  surface: "#FFFFFF"
-  surface-subtle: "#F8FAFC"
-  surface-hover: "#F1F5F9"
-  text: "#111827"
-  text-muted: "#4B5563"
-  border: "#D1D5DB"
-  sidebar: "#111827"
-  sidebar-text: "#F9FAFB"
-  success-surface: "#DCFCE7"
-  success-text: "#166534"
-  warning-surface: "#FEF3C7"
-  warning-text: "#92400E"
-  error-surface: "#FEE2E2"
-  error-text: "#991B1B"
-  info-surface: "#DBEAFE"
-  info-text: "#1E40AF"
-  focus: "#93C5FD"
+  paper: "#F7F2EA"
+  admin-ground: "#F4EFE8"
+  card: "#FFFDF9"
+  sand: "#EFE6DA"
+  line: "#E3D8CA"
+  ink: "#2A1F1E"
+  ink-2: "#3A2D2B"
+  muted: "#6B5A54"
+  terra: "#A9493A"
+  terra-dark: "#8C3A2D"
+  blush: "#EBCFC4"
+  sage: "#4F6B55"
+  warn-surface: "#FBEBDD"
+  warn-text: "#8A4B12"
+  info-surface: "#E3ECF7"
+  info-text: "#1E4A7A"
+  teal-surface: "#DDEFEC"
+  teal-text: "#1F5E57"
+  ok-surface: "#E7EDE4"
+  ok-text: "#3E5844"
+  bad-surface: "#F6E0DC"
+  bad-text: "#8C2F22"
 typography:
-  page-title:
-    fontFamily: Source Sans Pro
-    fontSize: 32px
-    fontWeight: 800
-    lineHeight: 1.1
-    letterSpacing: -0.01em
-  section-title:
-    fontFamily: Source Sans Pro
-    fontSize: 24px
-    fontWeight: 700
-    lineHeight: 1.2
-  card-title:
-    fontFamily: Source Sans Pro
-    fontSize: 16px
-    fontWeight: 700
-    lineHeight: 1.3
-  kpi-value:
-    fontFamily: Source Sans Pro
-    fontSize: 30px
-    fontWeight: 900
-    lineHeight: 1
-    letterSpacing: -0.01em
-  body-md:
-    fontFamily: Source Sans Pro
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.5
-  body-sm:
-    fontFamily: Source Sans Pro
+  display:
+    fontFamily: Fraunces Variable
+    use: títulos de página e de seção, números grandes do drop; itálico para a palavra em destaque
+    weight: 400–500
+    letterSpacing: -0.02em a -0.03em
+  body:
+    fontFamily: DM Sans Variable
+    use: todo o resto (texto, botões, tabelas, formulários)
+    sizes: 13px (meta), 14px (painel), 15–18px (loja)
+  eyebrow:
+    fontFamily: DM Sans Variable
     fontSize: 13px
-    fontWeight: 400
-    lineHeight: 1.4
-  label-md:
-    fontFamily: Source Sans Pro
-    fontSize: 14px
     fontWeight: 700
-    lineHeight: 1.2
-  table-header:
-    fontFamily: Source Sans Pro
-    fontSize: 12px
-    fontWeight: 800
-    lineHeight: 1.2
-    letterSpacing: 0.02em
-  caption:
-    fontFamily: Source Sans Pro
-    fontSize: 12px
-    fontWeight: 600
-    lineHeight: 1.35
-  numeric-data:
-    fontFamily: Source Sans Pro
-    fontSize: 14px
-    fontWeight: 700
-    lineHeight: 1.25
+    letterSpacing: 0.22em
+    transform: uppercase
+    color: "{colors.terra}"
+  numbers:
     fontFeature: "tnum"
 rounded:
-  none: 0px
-  sm: 4px
-  md: 8px
-  lg: 12px
-  xl: 14px
-  full: 9999px
+  control-admin: 10px
+  control-store: 12px
+  card: 14–18px
+  pill: 9999px
 spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  lg: 16px
-  xl: 24px
-  2xl: 32px
-  3xl: 48px
+  base: 4px
+  page-x: 20px (celular) / 32px (desktop)
+  section-y-store: 64–88px
 components:
-  app-shell:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-md}"
-    padding: "{spacing.xl}"
-  sidebar:
-    backgroundColor: "{colors.sidebar}"
-    textColor: "{colors.sidebar-text}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.none}"
-    padding: "{spacing.md}"
-    width: "250px"
-  sidebar-active:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.surface}"
-    typography: "{typography.label-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.sm}"
-    height: "42px"
-  page-heading:
-    textColor: "{colors.text}"
-    typography: "{typography.page-title}"
-    padding: "{spacing.xs}"
-  section-heading:
-    textColor: "{colors.text}"
-    typography: "{typography.section-title}"
-    padding: "{spacing.sm}"
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.surface}"
-    typography: "{typography.label-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md}"
-    height: "42px"
-  button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
-    textColor: "{colors.surface}"
-    typography: "{typography.label-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md}"
-    height: "42px"
-  button-secondary:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.label-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md}"
-    height: "42px"
-  input:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.md}"
-    height: "44px"
-  focus-indicator:
-    backgroundColor: "{colors.focus}"
-    rounded: "{rounded.sm}"
-    size: "3px"
-  card:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.xl}"
-    padding: "{spacing.xl}"
-  card-heading:
-    textColor: "{colors.text}"
-    typography: "{typography.card-title}"
-    padding: "{spacing.sm}"
-  kpi-card:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    typography: "{typography.kpi-value}"
-    rounded: "{rounded.xl}"
-    padding: "{spacing.xl}"
-  kpi-label:
-    textColor: "{colors.text-muted}"
-    typography: "{typography.caption}"
-    padding: "{spacing.xs}"
-  table:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.lg}"
-  table-header:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.table-header}"
-    padding: "{spacing.md}"
-    height: "44px"
-  table-row:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.body-sm}"
-    padding: "{spacing.md}"
-    height: "48px"
-  table-row-hover:
-    backgroundColor: "{colors.surface-hover}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-sm}"
-  numeric-cell:
-    textColor: "{colors.text}"
-    typography: "{typography.numeric-data}"
-    padding: "{spacing.md}"
-  divider:
-    backgroundColor: "{colors.border}"
-    rounded: "{rounded.none}"
-    height: "1px"
-  status-success:
-    backgroundColor: "{colors.success-surface}"
-    textColor: "{colors.success-text}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.sm}"
-  status-warning:
-    backgroundColor: "{colors.warning-surface}"
-    textColor: "{colors.warning-text}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.sm}"
-  status-error:
-    backgroundColor: "{colors.error-surface}"
-    textColor: "{colors.error-text}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.sm}"
-  status-info:
-    backgroundColor: "{colors.info-surface}"
-    textColor: "{colors.info-text}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.sm}"
-  chart-canvas:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.lg}"
-    height: "320px"
-  modal:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.2xl}"
-  empty-state:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.text-muted}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.3xl}"
+  button-primary: "fundo {colors.terra}, texto {colors.card}, hover {colors.terra-dark}; pílula na loja (52px), 10px de raio no painel (42px)"
+  button-ghost: "loja: borda 1.5px {colors.ink}, hover invertido; painel: borda {colors.line} em {colors.card}, hover {colors.sand}"
+  field: "altura 48px (loja) / 42px (painel), borda #D9CCBC, foco com contorno {colors.terra}"
+  panel: "fundo {colors.card}, borda 1px {colors.line}, raio 16px"
+  sidebar: "fundo {colors.ink}, item ativo {colors.ink-2} com texto {colors.card}, grupos em caixa-alta 11px"
+  status-pill: "par de superfície e texto semânticos + texto sempre visível"
 ---
 
-# ThriftStore Operations Dashboard Design System
+# Thrift Brechó — sistema visual
 
-## Overview
+Este arquivo vale para as interfaces Next.js: `storefront/` (loja) e `dashboard/` (painel). Os tokens estão implementados em `src/app/globals.css` de cada app (bloco `@theme` do Tailwind CSS 4). A referência visual aprovada fica no canvas de design do projeto.
 
-ThriftStore dashboards should feel **operational, calm, and exact**. The primary audience is a store administrator who needs to scan orders, inventory, customers, payments, and exceptions quickly. Interfaces favor clear hierarchy and compact information density over decorative presentation.
+As telas Razor antigas (`web/` e o painel em `admin/Presentation/ASPNET/FrontEnd`) seguem com o visual anterior até serem desligadas; não aplique este sistema nelas.
 
-This system formalizes the project's existing ASP.NET Core Razor Pages stack with AdminLTE, Bootstrap, Syncfusion grids, Vue, and Source Sans Pro. New work should reuse those foundations rather than introduce Tailwind or a second component framework. The design must remain usable on desktop and translate dense tables into labeled cards or deliberately scrollable views on small screens.
+## Princípios
 
-Every dashboard follows this reading order: page title and primary action, critical alerts, KPI summary, filters, visualization or dense table, then secondary details. The most important metric or exception must be identifiable within five seconds without relying on color alone.
+- **Loja: editorial e acolhedora.** Cada peça é única — muito respiro, fotos grandes, serifa nos títulos, terracota só onde há ação.
+- **Painel: denso e calmo.** Mesma paleta, menos ar. A primeira coisa da tela é o que precisa ser feito hoje.
+- **Nada inventado.** Se a API não tem o dado (marca, estado da peça, favoritos), a interface não finge que tem.
 
-## Colors
+## Cores
 
-The palette combines the existing dark slate navigation and blue interaction color with neutral surfaces optimized for long administrative sessions.
+- Fundo da loja `paper`, do painel `admin-ground`; cartões e painéis em `card` com borda `line`.
+- Texto principal `ink`; secundário `muted` (passa AA sobre `paper` e `card`).
+- `terra` é a cor de ação (botão principal, preço em destaque, aba ativa, link de hover). Uma ação primária por região.
+- `blush` só sobre fundo `ink` (rótulos do drop, avatar). `sage` para confirmações e chaves ligadas.
+- Status usam os pares semânticos (`warn`, `info`, `teal`, `ok`, `bad`) e **sempre** levam texto.
 
-- **Primary blue (`#1D4ED8`)** identifies the single primary action, active navigation, selected filters, links, and chart series. Use the darker hover blue for pointer and pressed feedback.
-- **Surfaces** use white for content and `#F8FAFC` for the application canvas, table headers, filter bands, and quiet grouping.
-- **Text** uses near-black for titles and essential values. Muted slate is reserved for metadata, descriptions, and non-primary table cells; it still meets WCAG AA on white.
-- **Semantic states** use paired background and text tokens. Always combine color with a label, icon, or pattern so status remains understandable without color perception.
-- **Focus blue** is a visible outline/ring, never the only indication of an error or selected state.
+Etapas de pedido no painel: aguardando pagamento = warn; pagamento confirmado = info; preparando embalagem = sand; etiqueta gerada = lilás `#EDE4F3/#5B3A75`; postado/em transporte = teal; entregue = ok; cancelado = bad.
 
-Chart palettes must start with primary blue, then use the semantic colors only when their meaning matches the data. Do not use success green for neutral growth or error red for an ordinary comparison series.
+## Tipografia
 
-## Typography
-
-Source Sans Pro is the dashboard typeface because it is already loaded by AdminLTE and remains legible in dense tables. System sans-serif fonts are the fallback. Do not add display fonts to operational screens.
-
-- Page titles are 32px/800 and occur once per view.
-- Section headings are 24px/700; card headings are 16px/700.
-- KPI values are 30px/900 with short labels placed above or below them.
-- Default UI copy is 14px with a 1.5 line height. Dense table cells may use 13px, never smaller.
-- Table headers are 12px/800. Use concise sentence case; uppercase is acceptable only for very short established labels.
-- Numeric cells use tabular figures and right alignment so magnitudes can be compared vertically.
-- Avoid more than three simultaneous weights in one region. Bold text communicates hierarchy, not decoration.
+- Fraunces (variável, eixo `opsz`) para títulos; uma palavra em itálico `terra` por título, no máximo.
+- DM Sans para todo o resto. Números comparáveis com `font-variant-numeric: tabular-nums` (classe `.num`).
+- Rótulo acima de título ("eyebrow"): classe `.eyebrow`.
+- As fontes vêm de `@fontsource-variable/*` (self-hosted, sem chamada ao Google Fonts).
 
 ## Layout
 
-Use a 4px base rhythm expressed by the spacing tokens. Desktop screens retain the existing 250px sidebar and place page content on the subtle application canvas. Standard page padding is 24px, increasing to 32px only on wide summary views. Keep the primary content width fluid so tables can use available space.
+- Loja: largura máxima 1280px; em telas pequenas, barra de atalhos fixa no rodapé (Início, Carrinho, Ajuda, Conta).
+- Painel: menu lateral de 248px (vira menu recolhível em telas pequenas), conteúdo até 1280px. Lista + painel de detalhe lado a lado; o detalhe desce para baixo da lista quando não cabe.
+- Tabelas largas ficam dentro de uma caixa com rolagem horizontal.
 
-Dashboard composition:
+## Componentes
 
-1. A page header aligns title/context left and one primary action right.
-2. KPI cards use a responsive grid with equal heights and a minimum useful width near 180px.
-3. Filters form a compact band directly above the data they affect. Place search first, common filters next, and destructive/reset actions last.
-4. Tables use sticky headers when vertically scrolling and horizontal scrolling when columns cannot be responsibly collapsed.
-5. Mobile layouts turn administrative rows into labeled cards, maintain 44px interaction targets, and keep the most important value first.
+- Classes base em `@layer components` (`.field`, `.btn-primary`, `.btn-ghost`, `.panel`, `.eyebrow`, `.num`) para que utilitários do Tailwind possam sobrescrevê-las.
+- Imagem de produto sem foto: bloco em tom neutro da paleta (sem texto em miniaturas).
+- Formulários: rótulo sempre visível, erro abaixo do campo, botão desabilitado com texto de progresso ("Gerando seu Pix...").
+- Ações irreversíveis ou que gastam dinheiro (pagar etiqueta, fechar sacolinha) pedem confirmação.
 
-Use 12px gaps inside compact controls, 16px between related components, 24px between dashboard regions, and 32–48px only between major narrative sections or for empty states. Do not create arbitrary spacing values when a token is sufficient.
+## Faça / não faça
 
-## Elevation & Depth
-
-Hierarchy comes primarily from tonal layers, borders, and spacing. The application canvas is subtle gray; cards and table containers are white with a 1px neutral border. Use shadows sparingly for overlays, sticky elements, menus, and modals—not for every dashboard card.
-
-KPI cards may use a restrained tinted surface tied to the metric's semantic meaning, but their text must use the paired accessible color. Sticky table headers must remain opaque and visually separated by a border. Modal backdrops need enough opacity to suppress the underlying dashboard without obscuring spatial context.
-
-## Shapes
-
-Shapes are practical and consistent. Inputs, buttons, navigation items, and compact controls use an 8px radius. Tables and chart containers use 12px. Dashboard cards use 14px. Status badges and avatar-like indicators use the full pill radius.
-
-Do not mix radii within the same component family. Square corners are reserved for full-bleed structural regions and 1px dividers. Clickable icons must sit inside a visible or hover-revealed target of at least 44px even when the glyph itself is smaller.
-
-## Components
-
-### KPI cards
-
-Show a short label, one prominent value, optional comparison, and a compact context line. Put the value in tabular numerals when it can change frequently. A KPI card is not a button unless the entire card has a clear label, focus state, and navigation affordance. Limit the first dashboard row to the metrics needed for the current decision.
-
-### Tables and grids
-
-Dense tables are the primary operational component. Default rows are approximately 48px high, headers 44px, and numeric content is right-aligned. Keep identifiers and primary names visually stronger than metadata. Use zebra striping only when it improves tracking across wide rows; hover highlighting must not shift layout.
-
-Sorting, filtering, pagination, selection, and bulk actions need visible labels or tooltips and keyboard access. Preserve sticky headers for long datasets. On mobile, use labeled cards for task-oriented records; keep horizontal scrolling for comparison tables where column alignment is essential.
-
-### Charts
-
-Charts answer one stated question and should sit near the KPIs or table they summarize. Include a textual title, time range, accessible legend, units, and a no-data state. Start axes at zero when magnitude comparison is the purpose. Never encode status or series with color alone; add labels, patterns, markers, or direct annotations.
-
-### Buttons and inputs
-
-Use one primary filled button per action region. Secondary actions are white with readable slate text and a neutral border. Destructive actions require an error label/icon and confirmation proportional to consequence. Inputs are at least 44px high, have persistent labels, visible focus, helper/error text, and never rely on placeholder text as the label.
-
-### Status, feedback, and overlays
-
-Status pills combine semantic surface/text pairs with a concise word and optional icon. Loading states preserve layout and identify the affected region. Empty states explain why no data appears and provide the most useful next action. Errors state what happened, what remains safe, and how to recover. Modals are reserved for focused edits or confirmations and must return focus to their trigger.
-
-## Do's and Don'ts
-
-- Do place the most decision-relevant KPIs before charts and tables.
-- Do keep table density consistent and preserve 44px minimum interactive targets.
-- Do pair every semantic color with text, an icon, or another non-color cue.
-- Do maintain WCAG AA contrast: at least 4.5:1 for normal text and 3:1 for large text and essential UI boundaries.
-- Do use Source Sans Pro, the defined spacing rhythm, and tabular figures for comparable metrics.
-- Do provide loading, empty, error, disabled, hover, focus, and selected states for interactive components.
-- Don't use gradients, shadows, or saturated colors merely to decorate operational data.
-- Don't show more KPI cards than a user can scan as one group; move secondary metrics closer to their relevant table or chart.
-- Don't truncate essential identifiers or currency values without a reliable way to reveal the complete value.
-- Don't make charts the only source of exact values when a table or accessible summary is appropriate.
-- Don't introduce Tailwind, another font family, or a parallel component library without an explicit migration decision.
-- Don't create one-off colors, radii, or spacing values when a DESIGN.md token already expresses the intent.
+- Faça alvos de toque de pelo menos 44px, foco visível (`terra`) e contraste AA.
+- Faça estados vazio, carregando e erro em toda lista.
+- Não use gradientes decorativos, emoji como ícone ou sombras em todo cartão (só em elementos flutuantes).
+- Não crie cores, raios ou fontes fora destes tokens sem atualizar este arquivo.
