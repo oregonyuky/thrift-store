@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LabelActions } from "@/components/painel/LabelActions";
 import { StatusBadge } from "@/components/painel/StatusBadge";
-import { ExternalIcon } from "@/components/painel/icons";
-import { getBalance, getOrder, getOrders, legacyUrl, type OrderRow, type Stage } from "@/lib/painel/data";
+import { getBalance, getOrder, getOrders, type OrderRow, type Stage } from "@/lib/painel/data";
+import { BalanceRecharge, OrderStatusForm } from "@/components/painel/OrderTools";
+import { SidePanel } from "@/components/painel/Fields";
 import { dateTime, money } from "@/lib/painel/format";
 import { requireSession } from "@/lib/painel/session";
 
@@ -27,7 +28,7 @@ function matches(o: OrderRow, q: string) {
   return o.id.toLowerCase().includes(s) || (o.customerName ?? "").toLowerCase().includes(s) || (o.city ?? "").toLowerCase().includes(s);
 }
 
-export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ etapa?: string; id?: string; q?: string }> }) {
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ etapa?: string; id?: string; q?: string; recarga?: string }> }) {
   const session = await requireSession();
   const params = await searchParams;
   const group = groups.find((g) => g.key === params.etapa) ?? groups[0];
@@ -115,7 +116,14 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           {rows.length === 0 && <p className="p-10 text-center text-sm text-muted">Nenhum pedido nesta etapa.</p>}
         </section>
 
-        {selected && (
+        {params.recarga && (
+          <SidePanel title="Recarregar saldo do Melhor Envio" closeHref={href({ id: params.id })}>
+            <p className="text-sm text-muted">Saldo atual: <strong className="num text-ink">{balance === null ? "indisponível" : money(balance)}</strong>. As etiquetas são pagas com esse saldo.</p>
+            <BalanceRecharge />
+          </SidePanel>
+        )}
+
+        {selected && !params.recarga && (
           <aside aria-label="Detalhes do pedido" className="panel flex flex-[1_1_340px] flex-col gap-[18px] p-[22px]">
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-col gap-1">
@@ -205,9 +213,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
               balance={balance === null ? null : money(balance)}
             />
 
-            <a href={legacyUrl("/Orders/Order")} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-ink">
-              Mudar status ou editar no painel completo <ExternalIcon size={13} />
-            </a>
+            <OrderStatusForm key={`s-${selected.id}-${selected.status}`} orderId={selected.id} status={selected.status} />
+            <Link href={href({ id: selected.id, recarga: "1" })} className="text-[13px] font-medium text-muted hover:text-ink">Recarregar saldo do Melhor Envio</Link>
           </aside>
         )}
       </div>

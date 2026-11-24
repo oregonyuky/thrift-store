@@ -1,5 +1,5 @@
 import "server-only";
-import { ApiError, apiBaseUrl, apiRequest, resolveImageUrl } from "../api";
+import { ApiError, apiRequest, resolveImageUrl } from "../api";
 import type { AdminSession } from "./session";
 
 type Raw = Record<string, unknown>;
@@ -24,6 +24,7 @@ export const stageLabels: Record<Stage, string> = {
 
 export interface OrderRow {
   id: string;
+  customerId?: string;
   customerName?: string;
   status?: string;
   stage: Stage;
@@ -77,6 +78,7 @@ function mapOrder(raw: Raw): OrderRow {
   const shipping = (raw.shippingDetail ?? {}) as Raw;
   return {
     id: String(raw.id ?? ""),
+    customerId: str(raw.customerId),
     customerName: str(raw.customerName) ?? str(raw.shippingRecipientName),
     ...base,
     stage: stageOf(base),
@@ -315,10 +317,4 @@ export async function getUnreadMessages(session: AdminSession): Promise<number |
     if (error instanceof ApiError && (error.status === 403 || error.status === 401)) return null;
     return null;
   }
-}
-
-/** Link into the legacy Razor panel (still served by the API host) for screens not rebuilt yet. */
-export function legacyUrl(path: string): string {
-  const base = process.env.LEGACY_ADMIN_URL || apiBaseUrl();
-  return new URL(path.replace(/^\//, ""), base.endsWith("/") ? base : `${base}/`).toString();
 }

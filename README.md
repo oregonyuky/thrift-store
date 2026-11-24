@@ -9,7 +9,7 @@ A loja e o painel da equipe foram refeitos em **Next.js 16 + TypeScript + Tailwi
 | Endereço | O que é |
 | --- | --- |
 | `/` | Loja: vitrine, peça, carrinho e sacolinha, checkout com Pix, minhas compras, conta, ajuda, fale conosco. |
-| `/painel` | Painel da equipe: visão geral, pedidos (etiqueta Melhor Envio em 3 passos), sacolinhas e produtos (cadastro com fotos). Login separado do das clientes. |
+| `/painel` | Painel da equipe: visão geral, pedidos, sacolinhas, clientes, mensagens, produtos, categorias, drops, caixas e embalagens, site e usuários. Login separado do das clientes. |
 
 No Render, o serviço `thrift-store-web` agora publica `storefront/` (veja `render.yaml`). A loja Razor antiga continua em `web/` só como referência; ela não é mais publicada.
 
@@ -19,7 +19,7 @@ Como funciona:
 - Clientes entram por `api/Customer/Login`; a equipe por `api/Security/Login`, e o token da equipe é renovado sozinho com `api/Security/RefreshToken` (`src/proxy.ts`).
 - O carrinho fica num cookie do navegador e vai junto quando a cliente entra na conta.
 - Endereços antigos da loja (`/Products/Details?id=…`, `/Cart`, `/Account/Login`…) redirecionam para os novos.
-- Telas do painel ainda não refeitas (clientes, mensagens, categorias, drops, caixas, site, usuários e mudança manual de status de pedido) abrem o painel Razor antigo, servido pela API. Ele pede login próprio.
+- O painel cobre tudo do painel antigo: pedidos (status, etiqueta e recarga de saldo do Melhor Envio), sacolinhas (prazos e configurações), clientes, mensagens, produtos, categorias, drops, caixas e categorias de embalagem, banner do site e usuários com áreas de acesso. Cada área respeita o mesmo perfil de acesso (role) do painel antigo; quem tem o perfil `Admin` vê todas.
 - O tempo real via SignalR virou consulta: o status do Pix é verificado a cada 5 segundos e as páginas buscam dados novos a cada visita.
 
 ### Rodar localmente
@@ -38,7 +38,6 @@ npm run dev                  # loja em http://localhost:5002 e painel em http://
 | `THRIFT_API_URL` (ou `ThriftStoreApi__BaseUrl`, o nome já usado no Render) | URL da API terminada em `/`. Precisa ser pública (HTTPS): o navegador carrega as fotos dela. |
 | `SESSION_SECRET` | 32+ caracteres aleatórios. Obrigatório em produção; no Render é gerado pelo Blueprint. |
 | `INSTAGRAM_URL`, `INSTAGRAM_ACCOUNT_ID`, `INSTAGRAM_ACCESS_TOKEN` | Opcionais: link do perfil e feed real na home. |
-| `LEGACY_ADMIN_URL` | Opcional: endereço do painel Razor antigo (padrão: a URL da API). |
 
 Imagem Docker local: `docker build -t thrift-storefront ./storefront` e `docker run -p 5002:3000 --env-file storefront/.env.local thrift-storefront`.
 

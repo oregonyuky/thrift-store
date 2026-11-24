@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { BagActions } from "@/components/painel/BagActions";
-import { getBags, getBagSettings, legacyUrl, type BagRow } from "@/lib/painel/data";
+import Link from "next/link";
+import { saveBagSettings } from "@/app/painel/manage-actions";
+import { Field, Select, SidePanel } from "@/components/painel/Fields";
+import { FormShell } from "@/components/painel/FormShell";
+import { getBags, getBagSettings, type BagRow } from "@/lib/painel/data";
+import { getBagSettingsFull } from "@/lib/painel/manage";
 import { dateTime, dayKey, money } from "@/lib/painel/format";
 import { requireSession } from "@/lib/painel/session";
 
@@ -14,6 +19,8 @@ const unitLabel: Record<string, [string, string]> = {
   weeks: ["semana", "semanas"],
   months: ["mês", "meses"],
 };
+
+const unitOptions: Array<[string, string]> = [["hours", "horas"], ["days", "dias"], ["weeks", "semanas"], ["months", "meses"]];
 
 const columns: Array<{ title: string; statuses: string[]; color: string }> = [
   { title: "Abertas", statuses: ["Active"], color: "bg-terra" },
@@ -36,9 +43,10 @@ function deadline(bag: BagRow) {
   return { text: `Fecha em ${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`, pct, urgent: daysLeft <= 1 };
 }
 
-export default async function BagsPage() {
+export default async function BagsPage({ searchParams }: { searchParams: Promise<{ config?: string }> }) {
   const session = await requireSession();
-  const [bags, settings] = await Promise.all([getBags(session).catch(() => null), getBagSettings(session)]);
+  const { config } = await searchParams;
+  const [bags, settings, full] = await Promise.all([getBags(session).catch(() => null), getBagSettings(session), config ? getBagSettingsFull(session) : Promise.resolve(null)]);
   const units = unitLabel[settings?.extensionDurationUnit ?? "days"] ?? ["dia", "dias"];
   const ext = settings?.extensionDurationValue ?? 7;
   const extendLabel = `Prorrogar ${ext} ${ext === 1 ? units[0] : units[1]}`;
@@ -50,11 +58,32 @@ export default async function BagsPage() {
           <h1 className="font-display text-[34px] font-normal tracking-tight">Sacolinhas</h1>
           <span className="text-sm text-muted">Compras pagas que esperam o prazo para viajar juntas.</span>
         </div>
-        <a href={legacyUrl("/Bags/Bag")} target="_blank" rel="noreferrer" className="btn-ghost">
+        <Link href={config ? "/painel/sacolinhas" : "/painel/sacolinhas?config=1"} className="btn-ghost">
           Prazos e configurações
-        </a>
+        </Link>
       </div>
 
+      {config && (
+        <div className="max-w-2xl">
+        <SidePanel title="Prazos da sacolinha" closeHref="/painel/sacolinhas">
+          {full ? (
+            <FormShell action={saveBagSettings}>
+              <p className="text-sm text-muted">Valem para as próximas sacolinhas abertas e prorrogações.</p>
+              <div className="grid grid-cols-[1fr_1.2fr] gap-3">
+                <Field label="Duração padrão" name="defaultDurationValue" type="number" min={1} defaultValue={full.defaultDurationValue} />
+                <Select label="Unidade" name="defaultDurationUnit" defaultValue={full.defaultDurationUnit} options={unitOptions} />
+                <Field label="Cada prorrogação" name="extensionDurationValue" type="number" min={1} defaultValue={full.extensionDurationValue} />
+                <Select label="Unidade" name="extensionDurationUnit" defaultValue={full.extensionDurationUnit} options={unitOptions} />
+                <Field label="Prazo para responder o e-mail de prorrogação" name="extensionResponseDeadlineValue" type="number" min={1} defaultValue={full.extensionResponseDeadlineValue} />
+                <Select label="Unidade" name="extensionResponseDeadlineUnit" defaultValue={full.extensionResponseDeadlineUnit} options={unitOptions} />
+              </div>
+            </FormShell>
+          ) : (
+            <p className="text-sm text-bad-fg">Não foi possível carregar os prazos atuais.</p>
+          )}
+        </SidePanel>
+        </div>
+      )}
       {!bags && <p role="alert" className="rounded-xl bg-bad-bg px-4 py-3 text-sm text-bad-fg">Não foi possível carregar as sacolinhas da API.</p>}
 
       <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-4">

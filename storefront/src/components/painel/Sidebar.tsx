@@ -8,7 +8,6 @@ import {
   BoxIcon,
   ChatIcon,
   CloseIcon,
-  ExternalIcon,
   GridIcon,
   LockIcon,
   MenuIcon,
@@ -25,41 +24,44 @@ interface Item {
   label: string;
   icon: React.ComponentType<{ size?: number }>;
   badge?: number;
-  external?: boolean;
 }
 
-export function Sidebar({ name, legacy, badges }: { name: string; legacy: Record<string, string>; badges: { orders?: number; messages?: number | null } }) {
+export function Sidebar({ name, roles, badges }: { name: string; roles: string[]; badges: { orders?: number; messages?: number | null } }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const groups: Array<[string | null, Item[]]> = [
+  // Same rule as the legacy panel: each area is a role named after it. No roles at all = show everything.
+  const isAdmin = roles.some((r) => r.toLowerCase() === "admin" || r.toLowerCase() === "administrator");
+  const allowed = (role?: string) => !role || roles.length === 0 || isAdmin || roles.includes(role);
+
+  const groups: Array<[string | null, Array<Item & { role?: string }>]> = [
     [null, [{ href: "/painel", label: "Visão geral", icon: GridIcon }]],
     [
       "Vendas",
       [
-        { href: "/painel/pedidos", label: "Pedidos", icon: OrderIcon, badge: badges.orders },
-        { href: "/painel/sacolinhas", label: "Sacolinhas", icon: BagIcon },
-        { href: legacy.customers, label: "Clientes", icon: PeopleIcon, external: true },
-        { href: legacy.messages, label: "Mensagens", icon: ChatIcon, badge: badges.messages ?? undefined, external: true },
+        { href: "/painel/pedidos", label: "Pedidos", icon: OrderIcon, badge: badges.orders, role: "Orders" },
+        { href: "/painel/sacolinhas", label: "Sacolinhas", icon: BagIcon, role: "Bags" },
+        { href: "/painel/clientes", label: "Clientes", icon: PeopleIcon, role: "Customers" },
+        { href: "/painel/mensagens", label: "Mensagens", icon: ChatIcon, badge: badges.messages ?? undefined, role: "Messages" },
       ],
     ],
     [
       "Catálogo",
       [
-        { href: "/painel/produtos", label: "Produtos", icon: ShirtIcon },
-        { href: legacy.categories, label: "Categorias", icon: TagIcon, external: true },
-        { href: legacy.drops, label: "Drops", icon: SparkIcon, external: true },
+        { href: "/painel/produtos", label: "Produtos", icon: ShirtIcon, role: "Products" },
+        { href: "/painel/categorias", label: "Categorias", icon: TagIcon, role: "Categories" },
+        { href: "/painel/drops", label: "Drops", icon: SparkIcon, role: "DropConfigs" },
       ],
     ],
-    ["Envio", [{ href: legacy.boxes, label: "Caixas e embalagens", icon: BoxIcon, external: true }]],
+    ["Envio", [{ href: "/painel/envio", label: "Caixas e embalagens", icon: BoxIcon, role: "ShippingBoxes" }]],
     [
       "Configurações",
       [
-        { href: legacy.site, label: "Site e banner", icon: WindowIcon, external: true },
-        { href: legacy.users, label: "Usuários e acesso", icon: LockIcon, external: true },
+        { href: "/painel/site", label: "Site e banner", icon: WindowIcon, role: "Site" },
+        { href: "/painel/usuarios", label: "Usuários e acesso", icon: LockIcon, role: "Users" },
       ],
     ],
-  ];
+  ].map(([title, items]) => [title, (items as Array<Item & { role?: string }>).filter((i) => allowed(i.role))] as [string | null, Array<Item & { role?: string }>]).filter(([, items]) => items.length > 0);
 
   const isActive = (href: string) => (href === "/painel" ? pathname === "/painel" : pathname.startsWith(href));
 
@@ -87,23 +89,18 @@ export function Sidebar({ name, legacy, badges }: { name: string; legacy: Record
             <div key={gi} className="flex flex-col gap-0.5">
               {title && <span className="px-3 pb-1.5 pt-4 text-[11px] uppercase tracking-[0.16em] text-[#a3948a]">{title}</span>}
               {items.map((item) => {
-                const active = !item.external && isActive(item.href);
+                const active = isActive(item.href);
                 const cls = `flex h-10 items-center gap-3 rounded-[10px] px-3 text-sm ${active ? "bg-ink-2 font-bold text-card" : "text-[#d9ccc2] hover:bg-ink-2 hover:text-card"}`;
                 const content = (
                   <>
                     <item.icon />
                     {item.label}
-                    {item.external && <ExternalIcon size={13} className="opacity-50" />}
                     {!!item.badge && (
                       <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-bold text-card ${item.href === "/painel/pedidos" ? "bg-terra" : "bg-[#4a3b38]"}`}>{item.badge}</span>
                     )}
                   </>
                 );
-                return item.external ? (
-                  <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className={cls} title="Abre no painel completo">
-                    {content}
-                  </a>
-                ) : (
+                return (
                   <Link key={item.label} href={item.href} aria-current={active ? "page" : undefined} className={cls} onClick={() => setOpen(false)}>
                     {content}
                   </Link>

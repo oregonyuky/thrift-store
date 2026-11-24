@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronIcon, BoxIcon, ClockIcon, ChatIcon } from "@/components/painel/icons";
 import { StatusBadge } from "@/components/painel/StatusBadge";
-import { getBags, getBalance, getDrops, getOrders, getProducts, getUnreadMessages, legacyUrl, type OrderRow } from "@/lib/painel/data";
+import { getBags, getBalance, getDrops, getOrders, getProducts, getUnreadMessages, type OrderRow } from "@/lib/painel/data";
 import { dayKey, greeting, money, moneyShort, relative, todayLong } from "@/lib/painel/format";
 import { requireSession } from "@/lib/painel/session";
 
@@ -71,7 +71,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   if (closingToday.length)
     tasks.push({ href: "/painel/sacolinhas", title: `${closingToday.length} ${closingToday.length === 1 ? "sacolinha fecha" : "sacolinhas fecham"} hoje`, sub: "Prorrogar ou preparar envio", tone: "bg-warn-bg text-warn-fg", icon: <ClockIcon /> });
   if (unread)
-    tasks.push({ href: legacyUrl("/Messages/Message"), external: true, title: `${unread} ${unread === 1 ? "mensagem nova" : "mensagens novas"}`, sub: "Fale conosco", tone: "bg-sand text-[#6b4a2e]", icon: <ChatIcon /> });
+    tasks.push({ href: "/painel/mensagens", title: `${unread} ${unread === 1 ? "mensagem nova" : "mensagens novas"}`, sub: "Fale conosco", tone: "bg-sand text-[#6b4a2e]", icon: <ChatIcon /> });
 
   const kpi = "panel flex flex-col gap-2 p-5";
   const loadError = !orders || !bags || !products;
@@ -184,9 +184,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                 <strong>{balance < 30 ? "Saldo Melhor Envio baixo" : "Saldo Melhor Envio"}</strong>
                 <span className="num text-[13px]">{money(balance)}</span>
               </span>
-              <a href={legacyUrl("/Orders/Order")} target="_blank" rel="noreferrer" className="py-2 text-[13px] font-bold underline-offset-4 hover:underline">
+              <Link href="/painel/pedidos?recarga=1" className="py-2 text-[13px] font-bold underline-offset-4 hover:underline">
                 Recarregar
-              </a>
+              </Link>
             </div>
           )}
         </section>
@@ -258,9 +258,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           ) : (
             <p className="text-sm text-[#d9ccc2]">Nenhum drop ativo no momento.</p>
           )}
-          <a href={legacyUrl("/DropConfigs/DropConfig")} target="_blank" rel="noreferrer" className="mt-auto py-1.5 text-sm font-bold text-blush hover:underline">
+          <Link href="/painel/drops" className="mt-auto py-1.5 text-sm font-bold text-blush hover:underline">
             Configurar drops
-          </a>
+          </Link>
         </section>
       </div>
     </div>
