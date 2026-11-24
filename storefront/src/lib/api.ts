@@ -7,7 +7,7 @@ import { apiBaseUrl } from "./api-base";
  */
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(message: string, public status: number, public detail?: string) {
     super(message);
     this.name = "ApiError";
   }
@@ -62,6 +62,16 @@ export function findMessage(value: unknown): string | undefined {
   return undefined;
 }
 
+/** "ECONNREFUSED", "ENOTFOUND", "tempo esgotado"... from a failed fetch. */
+export function networkDetail(error: unknown): string {
+  if (error instanceof Error) {
+    if (error.name === "TimeoutError" || error.name === "AbortError") return "tempo esgotado (20 s)";
+    const cause = (error as Error & { cause?: { code?: string; message?: string } }).cause;
+    return cause?.code || cause?.message || error.message;
+  }
+  return String(error);
+}
+
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
@@ -85,8 +95,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       cache: "no-store",
       signal: AbortSignal.timeout(20000),
     });
-  } catch {
-    throw new ApiError("Não foi possível falar com o servidor da loja. Tente novamente em instantes.", 503);
+  } catch (error) {
+    throw new ApiError(
+      "Não foi possível falar com o servidor da loja. Tente novamente em instantes.",
+      503,
+      `${networkDetail(error)} ao chamar ${new URL(path, apiBaseUrl()).origin}`,
+    );
   }
 
   const text = await response.text();

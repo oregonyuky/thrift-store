@@ -17,9 +17,13 @@ export function loginFailure(error: unknown, area: "loja" | "painel"): string {
     return "Erro no servidor do site ao entrar. Veja os logs do serviço no Render.";
   }
 
-  console.error(where, `a API respondeu ${error.status}:`, error.message);
+  console.error(where, `a API respondeu ${error.status}:`, error.message, error.detail ?? "");
+  if (error.detail) {
+    // The request never reached the API (wrong URL, API down, DNS...).
+    return `O site não conseguiu falar com a API (${error.detail}). Confira a variável ThriftStoreApi__BaseUrl no Render e se o serviço da API está no ar.`;
+  }
   if (error.status === 503 || error.status === 502 || error.status === 504) {
-    return "A API da loja não respondeu (pode estar reiniciando). Tente de novo em 1 minuto.";
+    return `A API respondeu erro ${error.status} (fora do ar ou reiniciando). Confira o serviço thrift-store-admin no Render.`;
   }
   if (error.status === 404) {
     return "Endereço da API incorreto: confira a variável ThriftStoreApi__BaseUrl no Render.";
