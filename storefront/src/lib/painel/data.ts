@@ -265,7 +265,17 @@ export interface ProductFull {
 
 export async function getProduct(session: AdminSession, id: string): Promise<ProductFull | null> {
   const raw = await apiRequest<ProductFull>(`api/Product/GetProductSingle?id=${encodeURIComponent(id)}`, { token: session.token, allowNotFound: true });
-  return raw && raw.id ? raw : null;
+  // The API sends null for empty fields (oldPrice, unitWeight...); the screens expect undefined.
+  return raw && raw.id ? (withoutNulls(raw) as ProductFull) : null;
+}
+
+function withoutNulls(value: unknown): unknown {
+  if (value === null) return undefined;
+  if (Array.isArray(value)) return value.map(withoutNulls);
+  if (typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, withoutNulls(v)]));
+  }
+  return value;
 }
 
 export interface Option {

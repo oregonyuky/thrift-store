@@ -11,9 +11,9 @@ import { requireSession } from "@/lib/painel/session";
 export const metadata: Metadata = { title: "Caixas e embalagens" };
 export const dynamic = "force-dynamic";
 
-const n = (v?: number) => (v === undefined ? "" : String(v).replace(".", ","));
+const n = (v?: number | null) => (v == null ? "" : String(v).replace(".", ","));
 const dims = (b: { width?: number; length?: number; height?: number }) =>
-  [b.length, b.width, b.height].every((v) => v !== undefined) ? `${n(b.length)} × ${n(b.width)} × ${n(b.height)} cm` : "—";
+  [b.length, b.width, b.height].every((v) => v != null) ? `${n(b.length)} × ${n(b.width)} × ${n(b.height)} cm` : "—";
 
 export default async function ShippingPage({ searchParams }: { searchParams: Promise<{ caixa?: string; categoria?: string }> }) {
   const session = await requireSession();

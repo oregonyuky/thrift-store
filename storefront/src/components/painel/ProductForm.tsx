@@ -43,7 +43,7 @@ function Buttons({ isNew, available }: { isNew: boolean; available?: boolean }) 
   );
 }
 
-const money = (v?: number) => (v === undefined ? "" : v.toFixed(2).replace(".", ","));
+const money = (v?: number | null) => (typeof v === "number" && Number.isFinite(v) ? v.toFixed(2).replace(".", ",") : "");
 
 export function ProductForm({ values, categories, drops, closeHref }: { values: ProductFormValues; categories: Array<{ id: string; name: string }>; drops: Array<{ id: string; name: string }>; closeHref: string }) {
   const [state, action] = useActionState<ActionResult, FormData>(saveProduct, {});
