@@ -104,6 +104,15 @@ Etapas de pedido no painel: aguardando pagamento = warn; pagamento confirmado = 
 - Formulários: rótulo sempre visível, erro abaixo do campo, botão desabilitado com texto de progresso ("Gerando seu Pix...").
 - Ações irreversíveis ou que gastam dinheiro (pagar etiqueta, fechar sacolinha) pedem confirmação.
 
+## Movimento (loja)
+
+- Fotos editoriais da home (`src/lib/media.ts`, geradas no Higgsfield) entram com `next/image` e se movem devagar: zoom lento (`.kenburns`), panorâmica vertical em fotos altas (`.pan-y`) e parallax leve no hero (`<Parallax>`, limitado a 10% da altura).
+- Selos flutuantes (`.float`, `.float-slow`) só em elementos que já são flutuantes (contagem de peças, destaque, selo de envio); são os únicos com sombra.
+- Títulos do hero sobem linha a linha no carregamento (`.rise` com `--d`); seções e cartões aparecem ao rolar (`data-reveal`, com `--d` para escalonar até ~300ms).
+- Faixa rolante (`<Marquee>`) em fundo `ink`, texto `paper`, separadores `blush`; pausa ao passar o mouse.
+- Sobre foto com texto, uma camada `ink` translúcida garante o contraste (é funcional, não decorativa).
+- Tudo respeita `prefers-reduced-motion`: animações param e o conteúdo aparece sem deslocamento.
+
 ## Faça / não faça
 
 - Faça alvos de toque de pelo menos 44px, foco visível (`terra`) e contraste AA.

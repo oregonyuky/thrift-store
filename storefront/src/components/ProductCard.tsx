@@ -21,9 +21,9 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
   const off = discountPercent(product.price, product.oldPrice);
   const size = product.sizes[0]?.size;
   return (
-    <article className="group flex flex-col gap-3.5">
+    <article data-reveal style={{ "--d": `${(index % 4) * 80}ms` } as React.CSSProperties} className="group flex flex-col gap-3.5">
       <Link href={`/produto/${product.id}`} className="relative block aspect-[4/5] overflow-hidden rounded-[14px] bg-sand">
-        <ProductImage product={product} index={index} className="transition-transform duration-500 group-hover:scale-[1.03]" />
+        <ProductImage product={product} index={index} className="transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
         {off > 0 && (
           <span className="absolute left-3 top-3 rounded-full bg-terra px-2.5 py-1 text-xs font-bold text-card">-{off}%</span>
         )}

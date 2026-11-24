@@ -1,3 +1,4 @@
+import { RevealObserver } from "@/components/Motion";
 import { Footer, Header, MobileNav } from "@/components/SiteChrome";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
       <main id="conteudo">{children}</main>
       <Footer />
       <MobileNav />
+      <RevealObserver />
     </>
   );
 }
