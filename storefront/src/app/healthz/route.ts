@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   if (new URL(request.url).searchParams.get("api")) {
     try {
       const started = Date.now();
-      const response = await fetch(new URL("api/Category/GetCategoryList", apiBaseUrl()), { cache: "no-store", signal: AbortSignal.timeout(10000) });
+      const response = await fetch(new URL("api/Category/GetCategoryList", apiBaseUrl()), { cache: "no-store", signal: AbortSignal.timeout(65000) });
       body.api = `HTTP ${response.status} em ${Date.now() - started} ms`;
     } catch (error) {
       body.api = `sem resposta: ${networkDetail(error)}`;

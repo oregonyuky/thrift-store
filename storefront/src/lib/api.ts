@@ -65,7 +65,7 @@ export function findMessage(value: unknown): string | undefined {
 /** "ECONNREFUSED", "ENOTFOUND", "tempo esgotado"... from a failed fetch. */
 export function networkDetail(error: unknown): string {
   if (error instanceof Error) {
-    if (error.name === "TimeoutError" || error.name === "AbortError") return "tempo esgotado (20 s)";
+    if (error.name === "TimeoutError" || error.name === "AbortError") return "tempo esgotado (65 s)";
     const cause = (error as Error & { cause?: { code?: string; message?: string } }).cause;
     return cause?.code || cause?.message || error.message;
   }
@@ -93,7 +93,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(65000),
     });
   } catch (error) {
     throw new ApiError(
