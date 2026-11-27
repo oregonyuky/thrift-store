@@ -44,7 +44,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
       <LoadError show={!users} what="os usuários" />
       <div className="flex flex-wrap items-start gap-5">
         <section className="panel min-w-0 flex-[999_1_480px] overflow-x-auto">
-          <table className="w-full min-w-[520px] border-collapse text-sm">
+          <table className="rtable w-full md:min-w-[520px] border-collapse text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                 <th className="px-5 py-3.5 font-medium">Pessoa</th>

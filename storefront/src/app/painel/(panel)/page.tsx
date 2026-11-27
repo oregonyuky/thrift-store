@@ -199,7 +199,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             <Link href="/painel/pedidos" className="text-sm font-medium hover:text-terra">Ver todos</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] border-collapse text-sm">
+            <table className="rtable w-full md:min-w-[560px] border-collapse text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                   <th className="px-[22px] py-2.5 font-medium">Pedido</th>

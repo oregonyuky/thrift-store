@@ -31,3 +31,98 @@
     border-radius: 1rem;
   }
 }
+
+/*
+ * Phones: each table row becomes a card. The first cell is the card title,
+ * the others are "label: value" lines (labels come from TableLabels.tsx),
+ * and a cell without a label (actions) sits at the foot, aligned right.
+ */
+@media (max-width: 767px) {
+  .admin .rtable,
+  .admin .rtable tbody,
+  .admin .rtable tr,
+  .admin .rtable td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin .rtable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .admin .rtable tbody tr {
+    padding: 0.875rem 1rem;
+  }
+
+  .admin .rtable tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .admin .rtable td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0 !important;
+    text-align: right !important;
+    min-height: 1.75rem;
+  }
+
+  .admin .rtable td {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    column-gap: 0.5rem;
+  }
+
+  .admin .rtable td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    margin-right: auto;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    text-align: left;
+  }
+
+  /* Title cell: full width, left-aligned, no label. */
+  .admin .rtable td:first-child {
+    justify-content: flex-start;
+    text-align: left !important;
+    padding-bottom: 0.5rem !important;
+    font-size: 0.9375rem;
+  }
+
+  .admin .rtable td:first-child::before,
+  .admin .rtable td[data-label=""]::before {
+    content: none;
+  }
+
+  /* Actions: buttons at the foot of the card, easy to tap. */
+  .admin .rtable td[data-label=""]:not(:first-child) {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  .admin .rtable td[data-label=""]:not(:first-child) :is(a, button) {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    background: var(--color-card);
+    color: var(--color-ink);
+  }
+
+  /* Empty-state rows (a single cell spanning the table) stay centred. */
+  .admin .rtable td[colspan] {
+    justify-content: center;
+    text-align: center !important;
+  }
+}

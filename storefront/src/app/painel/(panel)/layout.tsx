@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Sidebar } from "@/components/painel/Sidebar";
+import { DetailScroll } from "@/components/painel/DetailScroll";
+import { TableLabels } from "@/components/painel/TableLabels";
 import { PlusIcon } from "@/components/painel/icons";
 import { getOrders, getUnreadMessages } from "@/lib/painel/data";
 import { requireSession } from "@/lib/painel/session";
@@ -21,7 +24,11 @@ export default async function PanelLayout({ children }: { children: React.ReactN
             <PlusIcon size={16} /> Nova peça
           </Link>
         </div>
-        <main className="mx-auto w-full max-w-[1280px] px-5 pb-12 pt-7 md:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1280px] px-4 pb-12 pt-6 md:px-8 md:pt-7">{children}</main>
+        <TableLabels />
+        <Suspense fallback={null}>
+          <DetailScroll />
+        </Suspense>
       </div>
     </div>
   );

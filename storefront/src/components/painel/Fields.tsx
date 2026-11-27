@@ -49,7 +49,7 @@ export function Check({ label: text, name, defaultChecked }: { label: string; na
 /** Side panel used by every list screen for create / edit. */
 export function SidePanel({ title, closeHref, children }: { title: string; closeHref: string; children: React.ReactNode }) {
   return (
-    <aside aria-label={title} className="panel flex flex-[1_1_340px] flex-col gap-4 p-[22px]">
+    <aside data-detail aria-label={title} className="panel scroll-mt-4 flex flex-[1_1_340px] flex-col gap-4 p-[22px]">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">{title}</h2>
         <Link href={closeHref} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-sand">

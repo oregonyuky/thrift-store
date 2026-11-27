@@ -35,7 +35,7 @@ export default async function ShippingPage({ searchParams }: { searchParams: Pro
               <h2 className="text-base font-bold">Caixas</h2>
               <Link href="/painel/envio?caixa=nova" className="btn-ghost"><PlusIcon size={14} /> Nova caixa</Link>
             </div>
-            <table className="mt-2 w-full min-w-[620px] border-collapse text-sm">
+            <table className="rtable mt-2 w-full md:min-w-[620px] border-collapse text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                   <th className="px-5 py-3 font-medium">Caixa</th>
@@ -71,7 +71,7 @@ export default async function ShippingPage({ searchParams }: { searchParams: Pro
               <h2 className="text-base font-bold">Categorias de embalagem</h2>
               <Link href="/painel/envio?categoria=nova" className="btn-ghost"><PlusIcon size={14} /> Nova categoria</Link>
             </div>
-            <table className="mt-2 w-full min-w-[480px] border-collapse text-sm">
+            <table className="rtable mt-2 w-full md:min-w-[480px] border-collapse text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                   <th className="px-5 py-3 font-medium">Categoria</th>

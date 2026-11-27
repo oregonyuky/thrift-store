@@ -36,7 +36,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
       <div className="flex flex-wrap items-start gap-5">
         <section className="panel min-w-0 flex-[999_1_520px] overflow-x-auto">
-          <table className="w-full min-w-[620px] border-collapse text-sm">
+          <table className="rtable w-full md:min-w-[620px] border-collapse text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-[0.06em] text-muted">
                 <th className="px-5 py-3.5 font-medium">Cliente</th>

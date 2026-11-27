@@ -75,7 +75,7 @@ export function ProductForm({ values, categories, drops, closeHref }: { values: 
 
   const label = "text-[13px] font-bold";
   return (
-    <aside aria-label={isNew ? "Nova peça" : "Editar peça"} className="panel flex flex-[1_1_360px] flex-col gap-4 p-[22px]">
+    <aside data-detail aria-label={isNew ? "Nova peça" : "Editar peça"} className="panel scroll-mt-4 flex flex-[1_1_360px] flex-col gap-4 p-[22px]">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">{isNew ? "Nova peça" : "Editar peça"}</h2>
         <Link href={closeHref} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-sand">

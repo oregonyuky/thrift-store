@@ -95,7 +95,8 @@ Etapas de pedido no painel: aguardando pagamento = warn; pagamento confirmado = 
 
 - Loja: largura máxima 1280px; em telas pequenas, barra de atalhos fixa no rodapé (Início, Carrinho, Ajuda, Conta).
 - Painel: menu lateral de 248px (vira menu recolhível em telas pequenas), conteúdo até 1280px. Lista + painel de detalhe lado a lado; o detalhe desce para baixo da lista quando não cabe.
-- Tabelas largas ficam dentro de uma caixa com rolagem horizontal.
+- Tabelas do painel levam a classe `rtable`: abaixo de 768px cada linha vira um card (primeira coluna como título, as outras como "rótulo: valor", ações no rodapé com alvo de 44px). Os rótulos vêm do cabeçalho da tabela (`TableLabels`).
+- No celular, abrir um item (pedido, peça, caixa…) rola a tela até o painel de detalhe, que fica marcado com `data-detail`.
 
 ## Componentes
 
