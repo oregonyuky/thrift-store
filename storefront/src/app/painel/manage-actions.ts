@@ -377,3 +377,99 @@ export async function saveBagSettings(_: FormResult, form: FormData): Promise<Fo
     "Prazos salvos.",
   );
 }
+
+/* ---------- Company (sender address used on the shipping labels) ---------- */
+
+export async function saveCompany(_: FormResult, form: FormData): Promise<FormResult> {
+  const session = await requireSession();
+  const id = t(form, "id");
+  if (!id) return { error: "Cadastro da empresa não encontrado." };
+  const required: Array<[string, string]> = [
+    ["name", "o nome da loja"],
+    ["street", "o endereço"],
+    ["city", "a cidade"],
+    ["state", "o estado"],
+    ["zipCode", "o CEP"],
+    ["phoneNumber", "o telefone"],
+    ["emailAddress", "o e-mail"],
+  ];
+  const missing = required.find(([key]) => !t(form, key));
+  if (missing) return { error: `Informe ${missing[1]}.` };
+  const zip = t(form, "zipCode").replace(/\D/g, "");
+  if (zip.length !== 8) return { error: "Informe um CEP com 8 números." };
+  const state = t(form, "state").toUpperCase();
+  if (!/^[A-Z]{2}$/.test(state)) return { error: "Informe a sigla do estado com 2 letras (ex.: SP)." };
+  const body = {
+    id,
+    name: t(form, "name"),
+    description: opt(form, "description"),
+    currency: opt(form, "currency") ?? "BRL",
+    street: t(form, "street"),
+    city: t(form, "city"),
+    state,
+    zipCode: `${zip.slice(0, 5)}-${zip.slice(5)}`,
+    country: opt(form, "country") ?? "Brasil",
+    phoneNumber: t(form, "phoneNumber"),
+    faxNumber: opt(form, "faxNumber"),
+    emailAddress: t(form, "emailAddress"),
+    website: opt(form, "website"),
+    updatedById: session.userId,
+  };
+  return call("api/Company/UpdateCompany", { body }, "/painel/empresa", "Não foi possível salvar os dados da empresa.", "Dados da empresa salvos.");
+}
+
+/* ---------- Payment types ---------- */
+
+export async function savePaymentType(_: FormResult, form: FormData): Promise<FormResult> {
+  const id = opt(form, "id");
+  const typeName = t(form, "typeName");
+  if (!typeName) return { error: "Informe o nome da forma de pagamento." };
+  const body = { id, typeName, description: opt(form, "description"), isActive: on(form, "isActive") };
+  return call(
+    id ? "api/PaymentType/UpdatePaymentType" : "api/PaymentType/CreatePaymentType",
+    { body },
+    "/painel/pagamentos",
+    "Não foi possível salvar a forma de pagamento.",
+    id ? "Forma de pagamento salva." : "Forma de pagamento criada.",
+  );
+}
+
+export async function deletePaymentType(id: string): Promise<FormResult> {
+  return call("api/PaymentType/DeletePaymentType", { body: { id } }, "/painel/pagamentos", "Não foi possível excluir a forma de pagamento.", "Forma de pagamento excluída.");
+}
+
+/* ---------- My profile ---------- */
+
+export async function saveMyProfile(_: FormResult, form: FormData): Promise<FormResult> {
+  const session = await requireSession();
+  const firstName = t(form, "firstName");
+  const lastName = t(form, "lastName");
+  if (!firstName || !lastName) return { error: "Informe nome e sobrenome." };
+  const postCode = opt(form, "postCode");
+  if (postCode && !/^\d{5}-?\d{3}$/.test(postCode)) return { error: "Informe um CEP válido (ex.: 13010-000)." };
+  return call(
+    "api/Security/UpdateMyProfile",
+    { body: { userId: session.userId, firstName, lastName, companyName: opt(form, "companyName"), postCode } },
+    "/painel/perfil",
+    "Não foi possível salvar o perfil.",
+    "Perfil salvo. O nome no menu muda no próximo login.",
+  );
+}
+
+export async function saveMyPassword(_: FormResult, form: FormData): Promise<FormResult> {
+  const session = await requireSession();
+  const oldPassword = String(form.get("oldPassword") ?? "");
+  const newPassword = String(form.get("newPassword") ?? "");
+  const confirmNewPassword = String(form.get("confirmNewPassword") ?? "");
+  if (!oldPassword || !newPassword) return { error: "Preencha a senha atual e a nova senha." };
+  if (newPassword.length < 6) return { error: "A nova senha precisa ter pelo menos 6 caracteres." };
+  if (newPassword !== confirmNewPassword) return { error: "A confirmação não é igual à nova senha." };
+  const result = await call(
+    "api/Security/UpdateMyProfilePassword",
+    { body: { userId: session.userId, oldPassword, newPassword, confirmNewPassword } },
+    "/painel/perfil",
+    "Não foi possível trocar a senha. Confira a senha atual.",
+    "Senha trocada.",
+  );
+  return result.error && /incorrect|mismatch|invalid/i.test(result.error) ? { error: "A senha atual não confere." } : result;
+}

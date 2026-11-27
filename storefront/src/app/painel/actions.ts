@@ -20,6 +20,25 @@ const fail = (error: unknown, fallback: string): ActionResult => ({
 
 /* ---------- Auth ---------- */
 
+/** Staff "forgot password": the API e-mails a temporary password plus a link to /painel/recuperar. */
+export async function requestPasswordReset(_: ActionResult, form: FormData): Promise<ActionResult> {
+  const email = String(form.get("email") ?? "").trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "Informe um e-mail válido." };
+  const sent: ActionResult = {
+    ok: true,
+    message: "Se esse e-mail for de alguém da equipe, enviamos uma senha temporária e um link para ativá-la. Confira também o spam.",
+  };
+  try {
+    await apiRequest("api/Security/ForgotPassword", { method: "POST", body: { email } });
+    return sent;
+  } catch (error) {
+    // Unknown e-mail: answer the same way, so the form does not reveal who is on the team.
+    if (error instanceof ApiError && /unable to load user/i.test(`${error.message} ${error.detail ?? ""}`)) return sent;
+    console.error("[painel] forgot password", error);
+    return { error: "Não foi possível enviar o e-mail agora. Tente de novo em alguns minutos, ou peça a um administrador para redefinir sua senha em Usuários e acesso." };
+  }
+}
+
 export async function login(_: ActionResult, form: FormData): Promise<ActionResult> {
   const email = String(form.get("email") ?? "").trim();
   const password = String(form.get("password") ?? "");

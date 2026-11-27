@@ -263,3 +263,60 @@ export async function getBagSettingsFull(session: AdminSession): Promise<BagSett
     return null;
   }
 }
+
+/* ---------- Company (sender of the shipping labels) ---------- */
+
+export interface Company {
+  id: string;
+  name?: string;
+  description?: string;
+  currency?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  phoneNumber?: string;
+  faxNumber?: string;
+  emailAddress?: string;
+  website?: string;
+}
+
+export async function getCompany(session: AdminSession): Promise<Company | null> {
+  const data = await get<Raw[]>(session, "api/Company/GetCompanyList");
+  const first = list(data).find((c) => str(c.id));
+  return first ? { ...(first as unknown as Company), id: String(first.id) } : null;
+}
+
+/* ---------- Payment types ---------- */
+
+export interface PaymentType {
+  id: string;
+  typeName: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export async function getPaymentTypes(session: AdminSession): Promise<PaymentType[]> {
+  const data = await get<Raw[]>(session, "api/PaymentType/GetPaymentTypeList");
+  return list(data)
+    .map((p) => ({ id: String(p.id ?? ""), typeName: str(p.typeName) ?? "", description: str(p.description), isActive: p.isActive !== false }))
+    .filter((p) => p.id)
+    .sort((a, b) => a.typeName.localeCompare(b.typeName, "pt-BR"));
+}
+
+/* ---------- My profile ---------- */
+
+export interface MyProfile {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  postCode?: string;
+}
+
+export async function getMyProfile(session: AdminSession): Promise<MyProfile | null> {
+  const data = await get<Raw[]>(session, `api/Security/GetMyProfileList?userId=${encodeURIComponent(session.userId)}`);
+  const first = list(data)[0];
+  return first ? { ...(first as unknown as MyProfile), id: String(first.id ?? session.userId) } : null;
+}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthShell } from "@/components/painel/AuthShell";
 import { LoginForm } from "@/components/painel/LoginForm";
 import { getSession } from "@/lib/painel/session";
 
@@ -8,17 +10,11 @@ export const metadata: Metadata = { title: "Entrar" };
 export default async function LoginPage() {
   if (await getSession()) redirect("/painel");
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ink px-5 py-12">
-      <div className="w-full max-w-[400px] rounded-[20px] bg-card p-8">
-        <div className="mb-6 flex flex-col gap-1">
-          <span className="flex items-baseline gap-2">
-            <span className="font-display text-[34px] italic">Thrift</span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-terra">admin</span>
-          </span>
-          <p className="text-sm text-muted">Entre com sua conta da equipe.</p>
-        </div>
-        <LoginForm />
-      </div>
-    </div>
+    <AuthShell subtitle="Entre com sua conta da equipe.">
+      <LoginForm />
+      <Link href="/painel/esqueci" className="mt-4 block text-center text-sm font-medium text-muted hover:text-terra">
+        Esqueci minha senha
+      </Link>
+    </AuthShell>
   );
 }

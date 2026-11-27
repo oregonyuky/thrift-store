@@ -118,3 +118,16 @@ export const MenuIcon = (p: P) => (
     <path d="M4 7h16M4 12h16M4 17h10" />
   </I>
 );
+export const StoreIcon = (p: P) => (
+  <I {...p}>
+    <path d="M4 10v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" />
+    <path d="M3 10l1.5-5h15L21 10a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0" />
+    <path d="M10 20v-5h4v5" />
+  </I>
+);
+export const CardIcon = (p: P) => (
+  <I {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 10h18M7 15h3" />
+  </I>
+);

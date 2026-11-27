@@ -196,12 +196,13 @@ public class SecurityService : ISecurityService
         var textTempPassword = Guid.NewGuid().ToString().Substring(0, _identitySettings.Password.RequiredLength);
         var encryptedTempPassword = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(textTempPassword));
 
-        var request = _httpContextAccessor?.HttpContext?.Request;
-        var callbackUrl = $"{request?.Scheme}://{request?.Host}/Accounts/ForgotPasswordConfirmation?email={user.Email}&code={code}&tempPassword={encryptedTempPassword}";
+        // The staff panel lives in the store app (/painel); STORE_URL points at it.
+        var storeUrl = (Environment.GetEnvironmentVariable("STORE_URL") ?? "https://thrift-store-web.onrender.com").TrimEnd('/');
+        var callbackUrl = $"{storeUrl}/painel/recuperar?email={Uri.EscapeDataString(user.Email ?? string.Empty)}&code={code}&tempPassword={encryptedTempPassword}";
         var encodeCallbackUrl = $"{HtmlEncoder.Default.Encode(callbackUrl)}";
 
-        var emailSubject = $"Forgot password confirmation";
-        var emailMessage = $"Your temporary password is: <strong>{textTempPassword}</strong>. Please confirm reset your password by <a href='{encodeCallbackUrl}'>clicking here</a>.";
+        var emailSubject = "Thrift Brechó: sua senha temporária";
+        var emailMessage = $"Sua senha temporária é: <strong>{HtmlEncoder.Default.Encode(textTempPassword)}</strong>.<br><br>Para ativá-la, <a href='{encodeCallbackUrl}'>clique aqui</a>. Depois entre no painel com essa senha e troque por uma nova em Meu perfil.<br><br>Se não foi você que pediu, ignore este e-mail: sua senha atual continua valendo.";
 
         await _emailService.SendEmailAsync(user.Email ?? "", emailSubject, emailMessage);
 

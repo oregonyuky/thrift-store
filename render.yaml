@@ -43,6 +43,9 @@ services:
         sync: false
       - key: Cors__AllowedOrigins__0
         sync: false
+      # Store app that hosts the staff panel (/painel): reset-password links and the API's "/" point here.
+      - key: STORE_URL
+        value: https://thrift-store-web.onrender.com
 
   - type: web
     name: thrift-store-web

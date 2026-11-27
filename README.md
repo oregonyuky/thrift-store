@@ -19,7 +19,8 @@ Como funciona:
 - Clientes entram por `api/Customer/Login`; a equipe por `api/Security/Login`, e o token da equipe é renovado sozinho com `api/Security/RefreshToken` (`src/proxy.ts`).
 - O carrinho fica num cookie do navegador e vai junto quando a cliente entra na conta.
 - Endereços antigos da loja (`/Products/Details?id=…`, `/Cart`, `/Account/Login`…) redirecionam para os novos.
-- O painel cobre tudo do painel antigo: pedidos (status, etiqueta e recarga de saldo do Melhor Envio), sacolinhas (prazos e configurações), clientes, mensagens, produtos, categorias, drops, caixas e categorias de embalagem, banner do site e usuários com áreas de acesso. Cada área respeita o mesmo perfil de acesso (role) do painel antigo; quem tem o perfil `Admin` vê todas.
+- O painel cobre tudo do painel antigo: pedidos (status, etiqueta e recarga de saldo do Melhor Envio), sacolinhas (prazos e configurações), clientes, mensagens, produtos, categorias, drops, caixas e categorias de embalagem, banner do site, minha empresa (remetente das etiquetas), formas de pagamento, usuários com áreas de acesso, meu perfil e "esqueci minha senha". Cada área respeita o mesmo perfil de acesso (role) do painel antigo; quem tem o perfil `Admin` vê todas.
+- As telas antigas (Razor/AdminLTE) foram removidas do `admin/`: o serviço da API só responde em `/api`, `/healthz` e `/swagger` (em desenvolvimento). Abrir o endereço da API no navegador leva para `STORE_URL/painel`. `STORE_URL` (padrão `https://thrift-store-web.onrender.com`) também é usado no link do e-mail de "esqueci minha senha".
 - O tempo real via SignalR virou consulta: o status do Pix é verificado a cada 5 segundos e as páginas buscam dados novos a cada visita.
 
 ### Rodar localmente

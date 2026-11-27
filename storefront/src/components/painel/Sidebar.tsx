@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   BagIcon,
   BoxIcon,
+  CardIcon,
   ChatIcon,
   CloseIcon,
   GridIcon,
@@ -15,6 +16,7 @@ import {
   PeopleIcon,
   ShirtIcon,
   SparkIcon,
+  StoreIcon,
   TagIcon,
   WindowIcon,
 } from "./icons";
@@ -58,6 +60,8 @@ export function Sidebar({ name, roles, badges }: { name: string; roles: string[]
       "Configurações",
       [
         { href: "/painel/site", label: "Site e banner", icon: WindowIcon, role: "Site" },
+        { href: "/painel/empresa", label: "Minha empresa", icon: StoreIcon, role: "Companies" },
+        { href: "/painel/pagamentos", label: "Formas de pagamento", icon: CardIcon, role: "PaymentTypes" },
         { href: "/painel/usuarios", label: "Usuários e acesso", icon: LockIcon, role: "Users" },
       ],
     ],
@@ -114,7 +118,10 @@ export function Sidebar({ name, roles, badges }: { name: string; roles: string[]
           <span className="flex min-w-0 flex-1 flex-col text-[13px] text-card">
             <span className="truncate">{name}</span>
             <form action="/painel/logout" method="post">
-              <button type="submit" className="text-[#a3948a] hover:text-card">Sair</button>
+              <span className="flex gap-3 text-[#a3948a]">
+                <Link href="/painel/perfil" onClick={() => setOpen(false)} className="hover:text-card">Meu perfil</Link>
+                <button type="submit" className="hover:text-card">Sair</button>
+              </span>
             </form>
           </span>
         </div>

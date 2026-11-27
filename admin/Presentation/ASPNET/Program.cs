@@ -1,6 +1,5 @@
 using ASPNET.BackEnd;
 using ASPNET.BackEnd.Common.Middlewares;
-using ASPNET.FrontEnd;
 using DotNetEnv;
 using Microsoft.AspNetCore.DataProtection;
 using Npgsql;
@@ -25,7 +24,6 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath));
 
 builder.Services.AddBackEndServices(builder.Configuration);
-builder.Services.AddFrontEndServices();
 
 var app = builder.Build();
 
@@ -46,8 +44,20 @@ app.MapStaticAssets();
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }))
     .AllowAnonymous();
 
-app.MapFrontEndRoutes();
 app.MapBackEndRoutes();
+
+// The old Razor admin pages are gone: the staff panel is now /painel in the store app.
+// Anyone opening this service in a browser is sent there; unknown API paths still get 404.
+var storeUrl = (Environment.GetEnvironmentVariable("STORE_URL") ?? "https://thrift-store-web.onrender.com").TrimEnd('/');
+app.MapGet("/", () => Results.Redirect($"{storeUrl}/painel"))
+    .AllowAnonymous()
+    .ExcludeFromDescription();
+app.MapFallback((HttpContext context) =>
+        context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/swagger")
+            ? Results.NotFound()
+            : Results.Redirect($"{storeUrl}/painel"))
+    .AllowAnonymous()
+    .ExcludeFromDescription();
 
 app.Run();
 

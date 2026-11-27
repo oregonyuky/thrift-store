@@ -44,7 +44,7 @@ export function FormShell({
       {children}
       <div aria-live="polite">
         {state.error && <p role="alert" className="rounded-[10px] bg-bad-bg px-3.5 py-2.5 text-sm text-bad-fg">{state.error}</p>}
-        {state.message && <p className="rounded-[10px] bg-ok-bg px-3.5 py-2.5 text-sm text-ok-fg">{state.message}</p>}
+        {state.message && <p role="status" className="rounded-[10px] bg-ok-bg px-3.5 py-2.5 text-sm text-ok-fg">{state.message}</p>}
       </div>
       {extra?.(state)}
       <div className="flex gap-2.5">
