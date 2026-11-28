@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiveSearch } from "@/components/painel/LiveSearch";
 import { AvailabilitySwitch } from "@/components/painel/AvailabilitySwitch";
 import { EditIcon, PlusIcon } from "@/components/painel/icons";
 import { ProductForm, type ProductFormValues } from "@/components/painel/ProductForm";
@@ -88,7 +89,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
       {params.salvo && <p role="status" className="rounded-xl bg-ok-bg px-4 py-3 text-sm text-ok-fg">Peça salva.</p>}
 
-      <form action="/painel/produtos" className="flex flex-wrap items-center gap-2.5">
+      <LiveSearch action="/painel/produtos" className="flex flex-wrap items-center gap-2.5">
         <label className="sr-only" htmlFor="pq">Buscar peças</label>
         <input id="pq" name="q" type="search" defaultValue={params.q} placeholder="Buscar peça" className="field w-[260px] max-w-full" />
         <label className="sr-only" htmlFor="pcat">Categoria</label>
@@ -105,8 +106,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <select id="psit" name="situacao" defaultValue={situation.key} className="field w-auto">
           {situations.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
-        <button type="submit" className="btn-ghost">Filtrar</button>
-      </form>
+      </LiveSearch>
 
       {!products && <p role="alert" className="rounded-xl bg-bad-bg px-4 py-3 text-sm text-bad-fg">Não foi possível carregar as peças da API.</p>}
 

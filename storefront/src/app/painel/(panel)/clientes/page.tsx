@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiveSearch } from "@/components/painel/LiveSearch";
 import { deleteCustomer, saveCustomer } from "@/app/painel/manage-actions";
 import { Field, LoadError, PageHeader, rowCls, Select, SidePanel, td, TextArea, th } from "@/components/painel/Fields";
 import { ActionButton, FormShell } from "@/components/painel/FormShell";
@@ -27,11 +28,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Clientes" subtitle={customers ? `${customers.length} cadastradas` : undefined} />
-      <form action="/painel/clientes" className="flex gap-2.5">
+      <LiveSearch action="/painel/clientes" className="flex gap-2.5">
         <label className="sr-only" htmlFor="cq">Buscar clientes</label>
         <input id="cq" name="q" type="search" defaultValue={q} placeholder="Nome, e-mail, telefone, Instagram ou cidade" className="field w-[360px] max-w-full" />
-        <button type="submit" className="btn-ghost">Buscar</button>
-      </form>
+      </LiveSearch>
       <LoadError show={!customers} what="as clientes" />
 
       <div className="flex flex-wrap items-start gap-5">

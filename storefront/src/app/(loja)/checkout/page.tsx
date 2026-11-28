@@ -40,16 +40,16 @@ export default async function CheckoutPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-5 pb-24 pt-10 md:px-8">
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-5 pb-36 pt-8 md:gap-8 md:px-8 md:pt-10 lg:pb-24">
       <div className="flex flex-col gap-2">
         <span className="eyebrow">Compra segura</span>
-        <h1 className="font-display text-[40px] font-normal tracking-tight">Finalizar compra</h1>
+        <h1 className="font-display text-[34px] font-normal tracking-tight md:text-[40px]">Finalizar compra</h1>
       </div>
 
       {items.length > 0 && (
         <ul className="flex gap-3 overflow-x-auto pb-1" aria-label="Peças do pedido">
           {items.map((p, i) => (
-            <li key={p.id} className="flex min-w-[240px] items-center gap-3 rounded-2xl border border-line bg-card p-2.5">
+            <li key={p.id} className="flex min-w-[220px] max-w-[280px] shrink-0 items-center gap-3 rounded-2xl border border-line bg-card p-2.5">
               <span className="h-16 w-[52px] shrink-0 overflow-hidden rounded-lg"><ProductImage product={p} index={i} /></span>
               <span className="flex min-w-0 flex-col text-sm">
                 <span className="truncate font-medium">{p.name}</span>

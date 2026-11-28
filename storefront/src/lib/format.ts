@@ -69,3 +69,12 @@ export const toneClass: Record<Tone, string> = {
   cancel: "bg-bad-bg text-bad-fg",
   muted: "bg-sand text-muted",
 };
+
+/** (19) 99999-0000 for mobiles, (19) 3333-0000 for landlines. */
+export function formatPhone(value: string) {
+  const d = value.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}

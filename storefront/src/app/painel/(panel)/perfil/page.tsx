@@ -16,7 +16,7 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-5">
       <PageHeader title="Meu perfil" subtitle={`Você entrou como ${session.email ?? session.name}.`} />
       <LoadError show={profile === undefined} what="o seu perfil" />
-      <div className="grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid max-w-[1000px] items-start gap-5 lg:grid-cols-2">
         <section className="panel p-[22px]">
           <h2 className="mb-3.5 text-base font-bold">Dados</h2>
           <FormShell action={saveMyProfile} key={profile?.id ?? "perfil"}>
@@ -24,8 +24,6 @@ export default async function ProfilePage() {
               <Field label="Nome" name="firstName" defaultValue={profile?.firstName} required autoComplete="given-name" />
               <Field label="Sobrenome" name="lastName" defaultValue={profile?.lastName} required autoComplete="family-name" />
             </div>
-            <Field label="Empresa (opcional)" name="companyName" defaultValue={profile?.companyName} />
-            <Field label="CEP (opcional)" name="postCode" defaultValue={profile?.postCode} inputMode="numeric" placeholder="13010-000" />
           </FormShell>
         </section>
 

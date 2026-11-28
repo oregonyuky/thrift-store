@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError, apiRequest, apiUpload } from "@/lib/api";
-import { getCustomers } from "@/lib/painel/manage";
+import { getCustomers, getMyProfile } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
 
 export interface FormResult {
@@ -386,15 +386,22 @@ export async function saveCompany(_: FormResult, form: FormData): Promise<FormRe
   if (!id) return { error: "Cadastro da empresa não encontrado." };
   const required: Array<[string, string]> = [
     ["name", "o nome da loja"],
-    ["street", "o endereço"],
+    ["rua", "a rua"],
+    ["numero", "o número"],
+    ["bairro", "o bairro"],
     ["city", "a cidade"],
     ["state", "o estado"],
     ["zipCode", "o CEP"],
     ["phoneNumber", "o telefone"],
     ["emailAddress", "o e-mail"],
   ];
-  const missing = required.find(([key]) => !t(form, key));
+  // Older form posts (or no JS) send the whole line in "street" instead of its parts.
+  const hasParts = form.has("rua");
+  const missing = required.filter(([key]) => hasParts || !["rua", "numero", "bairro"].includes(key)).find(([key]) => !t(form, key));
   if (missing) return { error: `Informe ${missing[1]}.` };
+  if (!t(form, "street")) return { error: "Informe o endereço." };
+  const phoneDigits = t(form, "phoneNumber").replace(/\D/g, "");
+  if (phoneDigits.length < 10 || phoneDigits.length > 11) return { error: "Informe o telefone com DDD, ex.: (19) 99999-0000." };
   const zip = t(form, "zipCode").replace(/\D/g, "");
   if (zip.length !== 8) return { error: "Informe um CEP com 8 números." };
   const state = t(form, "state").toUpperCase();
@@ -445,11 +452,12 @@ export async function saveMyProfile(_: FormResult, form: FormData): Promise<Form
   const firstName = t(form, "firstName");
   const lastName = t(form, "lastName");
   if (!firstName || !lastName) return { error: "Informe nome e sobrenome." };
-  const postCode = opt(form, "postCode");
-  if (postCode && !/^\d{5}-?\d{3}$/.test(postCode)) return { error: "Informe um CEP válido (ex.: 13010-000)." };
+  // Company and CEP are no longer on this screen: keep whatever the account already has.
+  const current = await getMyProfile(session).catch(() => null);
+  const postCode = current?.postCode && /^\d{5}-?\d{3}$/.test(current.postCode) ? current.postCode : undefined;
   return call(
     "api/Security/UpdateMyProfile",
-    { body: { userId: session.userId, firstName, lastName, companyName: opt(form, "companyName"), postCode } },
+    { body: { userId: session.userId, firstName, lastName, companyName: current?.companyName, postCode } },
     "/painel/perfil",
     "Não foi possível salvar o perfil.",
     "Perfil salvo. O nome no menu muda no próximo login.",

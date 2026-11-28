@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { placeOrder, type CheckoutState } from "@/app/actions";
-import { money } from "@/lib/format";
+import { formatPhone, money } from "@/lib/format";
 import { formatCep } from "./ShippingQuote";
 import { PixPanel } from "./PixPanel";
 import { SubmitButton } from "./SubmitButton";
@@ -42,14 +42,24 @@ const formatCpf = (v: string) => {
 export function CheckoutForm({ defaults, subtotal, hasOpenBag, empty }: { defaults: CheckoutDefaults; subtotal: number; hasOpenBag: boolean; empty: boolean }) {
   const [state, action] = useActionState<CheckoutState, FormData>(placeOrder, {});
   const [mode, setMode] = useState<"normal" | "bag">(hasOpenBag ? "bag" : "normal");
-  const [values, setValues] = useState(defaults);
+  const [values, setValues] = useState(() => ({ ...defaults, cpf: formatCpf(defaults.cpf), phone: formatPhone(defaults.phone) }));
   const [shipping, setShipping] = useState<{ cost?: number; error?: string; loading?: boolean }>({});
   const fe = state.fieldErrors ?? {};
 
   const set = (key: keyof CheckoutDefaults) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setValues((v) => ({ ...v, [key]: key === "postCode" ? formatCep(e.target.value) : key === "cpf" ? formatCpf(e.target.value) : e.target.value }));
+    setValues((v) => ({ ...v, [key]: key === "postCode" ? formatCep(e.target.value) : key === "cpf" ? formatCpf(e.target.value) : key === "phone" ? formatPhone(e.target.value) : e.target.value }));
 
   const cepDigits = values.postCode.replace(/\D/g, "");
+  const total = subtotal + (mode === "normal" ? shipping.cost ?? 0 : 0);
+
+  // After a failed submit, take the customer to the first field to fix (on phones it is far up).
+  useEffect(() => {
+    const first = Object.keys(state.fieldErrors ?? {})[0];
+    if (!first) return;
+    const el = document.getElementById(`co-${first}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus({ preventScroll: true });
+  }, [state.fieldErrors]);
 
   // Fill the address from ViaCEP and quote shipping once the CEP is complete.
   useEffect(() => {
@@ -117,25 +127,25 @@ export function CheckoutForm({ defaults, subtotal, hasOpenBag, empty }: { defaul
       <div className="flex flex-col gap-8">
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-4 font-display text-2xl">1. Seus dados</legend>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-x-4">
             <Field label="Nome" name="firstName" autoComplete="given-name" value={values.firstName} onChange={set("firstName")} error={fe.firstName} required />
             <Field label="Sobrenome" name="lastName" autoComplete="family-name" value={values.lastName} onChange={set("lastName")} error={fe.lastName} required />
-            <Field label="E-mail" name="email" type="email" autoComplete="email" value={values.email} onChange={set("email")} error={fe.email} required />
-            <Field label="Telefone com DDD" name="phone" type="tel" autoComplete="tel" value={values.phone} onChange={set("phone")} error={fe.phone} required />
-            <Field label="CPF (para o Pix)" name="cpf" inputMode="numeric" value={values.cpf} onChange={set("cpf")} error={fe.cpf} required />
+            <Field className="col-span-2 sm:col-span-1" label="E-mail" name="email" type="email" autoComplete="email" value={values.email} onChange={set("email")} error={fe.email} required />
+            <Field className="col-span-2 sm:col-span-1" label="Telefone com DDD" name="phone" type="tel" placeholder="(19) 99999-0000" autoComplete="tel" value={values.phone} onChange={set("phone")} error={fe.phone} required />
+            <Field className="col-span-2 sm:col-span-1" label="CPF (para o Pix)" name="cpf" inputMode="numeric" value={values.cpf} onChange={set("cpf")} error={fe.cpf} required />
           </div>
         </fieldset>
 
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-4 font-display text-2xl">2. Endereço de entrega</legend>
-          <div className="grid gap-4 sm:grid-cols-6">
-            <Field className="sm:col-span-2" label="CEP" name="postCode" inputMode="numeric" autoComplete="postal-code" value={values.postCode} onChange={set("postCode")} error={fe.postCode} required />
-            <Field className="sm:col-span-4" label="Rua" name="street" autoComplete="address-line1" value={values.street} onChange={set("street")} error={fe.street} required />
-            <Field className="sm:col-span-2" label="Número" name="number" value={values.number} onChange={set("number")} error={fe.number} required />
-            <Field className="sm:col-span-4" label="Complemento (opcional)" name="complement" autoComplete="address-line2" value={values.complement} onChange={set("complement")} />
-            <Field className="sm:col-span-3" label="Bairro" name="neighborhood" value={values.neighborhood} onChange={set("neighborhood")} error={fe.neighborhood} required />
-            <Field className="sm:col-span-2" label="Cidade" name="city" autoComplete="address-level2" value={values.city} onChange={set("city")} error={fe.city} required />
-            <Field className="sm:col-span-1" label="UF" name="state" maxLength={2} autoComplete="address-level1" value={values.state} onChange={set("state")} error={fe.state} required />
+          <div className="grid grid-cols-6 gap-x-3 gap-y-4 sm:gap-x-4">
+            <Field className="col-span-6 sm:col-span-2" label="CEP" name="postCode" inputMode="numeric" autoComplete="postal-code" value={values.postCode} onChange={set("postCode")} error={fe.postCode} required />
+            <Field className="col-span-6 sm:col-span-4" label="Rua" name="street" autoComplete="address-line1" value={values.street} onChange={set("street")} error={fe.street} required />
+            <Field className="col-span-2" label="Número" name="number" value={values.number} onChange={set("number")} error={fe.number} required />
+            <Field className="col-span-4" label="Complemento" placeholder="Opcional" name="complement" autoComplete="address-line2" value={values.complement} onChange={set("complement")} />
+            <Field className="col-span-6 sm:col-span-3" label="Bairro" name="neighborhood" value={values.neighborhood} onChange={set("neighborhood")} error={fe.neighborhood} required />
+            <Field className="col-span-4 sm:col-span-2" label="Cidade" name="city" autoComplete="address-level2" value={values.city} onChange={set("city")} error={fe.city} required />
+            <Field className="col-span-2 sm:col-span-1" label="UF" name="state" maxLength={2} autoComplete="address-level1" value={values.state} onChange={set("state")} error={fe.state} required />
           </div>
         </fieldset>
 
@@ -176,13 +186,27 @@ export function CheckoutForm({ defaults, subtotal, hasOpenBag, empty }: { defaul
           {mode === "normal" && shipping.error && <p className="text-[13px] text-bad-fg">{shipping.error}</p>}
           <div className="mt-2 flex justify-between border-t border-line pt-3 text-lg font-bold">
             <dt>Total estimado</dt>
-            <dd>{money(subtotal + (mode === "normal" ? shipping.cost ?? 0 : 0))}</dd>
+            <dd>{money(total)}</dd>
           </div>
         </dl>
         <p className="rounded-xl bg-paper px-3.5 py-3 text-[13px] text-muted">Pagamento via Pix com QR Code do Mercado Pago. O valor final aparece no app do seu banco.</p>
         {state.error && <p role="alert" className="rounded-xl bg-bad-bg px-3.5 py-3 text-sm text-bad-fg">{state.error}</p>}
-        <SubmitButton className="btn-primary min-h-14 text-base" pending="Gerando seu Pix...">Pagar no Pix</SubmitButton>
+        <SubmitButton className="btn-primary hidden min-h-14 text-base lg:inline-flex" pending="Gerando seu Pix...">Pagar no Pix</SubmitButton>
       </aside>
+
+      {/* Phones: total and pay button always within reach. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 shadow-[0_-8px_24px_rgba(42,31,30,0.08)] backdrop-blur lg:hidden">
+        {(state.error || Object.keys(fe).length > 0) && (
+          <p role="alert" className="mb-2 text-[13px] font-medium text-bad-fg">{state.error ?? "Confira os campos destacados."}</p>
+        )}
+        <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-col">
+            <span className="text-xs text-muted">{mode === "bag" ? "Total (frete no fechamento)" : shipping.cost === undefined ? "Total sem frete" : "Total"}</span>
+            <span className="num text-lg font-bold leading-tight">{money(total)}</span>
+          </div>
+          <SubmitButton className="btn-primary min-h-12 flex-1 text-base" pending="Gerando Pix...">Pagar no Pix</SubmitButton>
+        </div>
+      </div>
     </form>
   );
 }

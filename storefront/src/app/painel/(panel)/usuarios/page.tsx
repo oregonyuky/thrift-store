@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createUser, deleteUser, resetUserPassword, setUserRole, updateUser } from "@/app/painel/manage-actions";
+import { deleteUser, resetUserPassword, setUserRole, updateUser } from "@/app/painel/manage-actions";
 import { Check, Field, LoadError, PageHeader, rowCls, SidePanel, td, th } from "@/components/painel/Fields";
 import { ActionButton, FormShell, ToggleAction } from "@/components/painel/FormShell";
-import { PlusIcon } from "@/components/painel/icons";
+import { LockIcon } from "@/components/painel/icons";
 import { shortDate } from "@/lib/painel/format";
 import { getRoles, getUserRoles, getUsers } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
@@ -31,16 +31,16 @@ const roleNames: Record<string, string> = {
   Dashboards: "Visão geral",
 };
 
-export default async function UsersPage({ searchParams }: { searchParams: Promise<{ id?: string; novo?: string }> }) {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const session = await requireSession();
-  const { id, novo } = await searchParams;
+  const { id } = await searchParams;
   const [users, roles] = await Promise.all([getUsers(session).catch(() => null), getRoles(session).catch(() => [])]);
   const selected = id ? (users ?? []).find((u) => u.id === id) : undefined;
   const granted = selected ? await getUserRoles(session, selected.id).catch(() => [] as string[]) : [];
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Usuários e acesso" subtitle="Quem da equipe entra no painel e o que cada pessoa pode ver." action={<Link href="/painel/usuarios?novo=1" className="btn-primary"><PlusIcon size={16} /> Novo usuário</Link>} />
+      <PageHeader title="Usuários e acesso" subtitle="Quem entra no painel e o que pode ver. Para trocar o seu nome ou a sua senha, use Meu perfil." action={<Link href="/painel/perfil" className="btn-primary"><LockIcon size={16} /> Trocar minha senha</Link>} />
       <LoadError show={!users} what="os usuários" />
       <div className="flex flex-wrap items-start gap-5">
         <section className="panel min-w-0 flex-[999_1_480px] overflow-x-auto">
@@ -71,20 +71,6 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
             </tbody>
           </table>
         </section>
-
-        {novo && !selected && (
-          <SidePanel title="Novo usuário" closeHref="/painel/usuarios">
-            <FormShell action={createUser} submit="Criar usuário" pending="Criando..." resetOnSuccess>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Nome" name="firstName" required />
-                <Field label="Sobrenome" name="lastName" />
-              </div>
-              <Field label="E-mail" name="email" type="email" required autoComplete="off" />
-              <Field label="Senha inicial" name="password" type="password" minLength={6} required autoComplete="new-password" />
-              <p className="-mt-1.5 text-xs text-muted">Depois de criar, abra o usuário na lista para escolher as áreas que ele acessa.</p>
-            </FormShell>
-          </SidePanel>
-        )}
 
         {selected && (
           <SidePanel title={[selected.firstName, selected.lastName].filter(Boolean).join(" ") || selected.email || "Usuário"} closeHref="/painel/usuarios">

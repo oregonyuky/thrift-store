@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LiveSearch } from "@/components/painel/LiveSearch";
 import { LabelActions } from "@/components/painel/LabelActions";
 import { StatusBadge } from "@/components/painel/StatusBadge";
 import { getBalance, getOrder, getOrders, type OrderRow, type Stage } from "@/lib/painel/data";
@@ -52,11 +53,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-[34px] font-normal tracking-tight">Pedidos</h1>
-        <form action="/painel/pedidos" className="flex gap-2.5">
+        <LiveSearch action="/painel/pedidos" className="flex gap-2.5">
           {group.key !== "todos" && <input type="hidden" name="etapa" value={group.key} />}
           <label className="sr-only" htmlFor="q">Buscar pedidos</label>
           <input id="q" name="q" type="search" defaultValue={q} placeholder="Nº do pedido, cliente ou cidade" className="field w-[280px] max-w-full" />
-        </form>
+        </LiveSearch>
       </div>
 
       <nav aria-label="Etapa do pedido" className="flex flex-wrap gap-1.5 border-b border-line">

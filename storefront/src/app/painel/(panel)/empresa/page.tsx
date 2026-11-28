@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { saveCompany } from "@/app/painel/manage-actions";
 import { Field, LoadError, PageHeader, TextArea } from "@/components/painel/Fields";
+import { PhoneField, SenderAddress } from "@/components/painel/CompanyFields";
 import { FormShell } from "@/components/painel/FormShell";
 import { getCompany } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
@@ -27,18 +28,13 @@ export default async function CompanyPage() {
             <div className="grid gap-3.5 sm:grid-cols-2">
               <Field label="Nome da loja" name="name" defaultValue={company.name} required />
               <Field label="E-mail" name="emailAddress" type="email" defaultValue={company.emailAddress} required />
-              <Field label="Telefone" name="phoneNumber" type="tel" defaultValue={company.phoneNumber} required placeholder="(19) 99999-0000" />
+              <PhoneField defaultValue={company.phoneNumber} />
               <Field label="Site (opcional)" name="website" defaultValue={company.website} placeholder="https://" />
             </div>
             <TextArea label="Descrição (opcional)" name="description" defaultValue={company.description} />
 
             <h2 className="mt-3 border-t border-sand pt-4 text-base font-bold">Endereço de remetente</h2>
-            <Field label="Endereço" name="street" defaultValue={company.street} required placeholder="Rua, número e bairro" />
-            <div className="grid gap-3.5 sm:grid-cols-[1fr_110px_150px]">
-              <Field label="Cidade" name="city" defaultValue={company.city} required />
-              <Field label="Estado" name="state" defaultValue={company.state} required maxLength={2} placeholder="SP" />
-              <Field label="CEP" name="zipCode" defaultValue={company.zipCode} required inputMode="numeric" placeholder="13010-000" />
-            </div>
+            <SenderAddress street={company.street} city={company.city} state={company.state} zipCode={company.zipCode} />
             <Field label="País" name="country" defaultValue={company.country ?? "Brasil"} />
           </FormShell>
         </section>

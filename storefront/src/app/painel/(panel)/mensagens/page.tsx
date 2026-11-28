@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { markMessageRead } from "@/app/painel/manage-actions";
 import { LoadError, PageHeader, SidePanel } from "@/components/painel/Fields";
+import { ChatIcon } from "@/components/painel/icons";
 import { ActionButton } from "@/components/painel/FormShell";
 import { dateTime, relative } from "@/lib/painel/format";
 import { getMessages } from "@/lib/painel/manage";
@@ -85,8 +86,13 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                 </a>
               )}
               {selected.phone && (
-                <a className="btn-ghost" href={`https://wa.me/55${selected.phone.replace(/\D/g, "").replace(/^55/, "")}`} target="_blank" rel="noreferrer">
-                  WhatsApp
+                <a
+                  className="btn-primary !bg-sage hover:!bg-[#435c49]"
+                  href={`https://wa.me/55${selected.phone.replace(/\D/g, "").replace(/^55/, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ChatIcon size={16} /> Responder no WhatsApp
                 </a>
               )}
               {!selected.isRead && <ActionButton action={markMessageRead.bind(null, selected.id)} label="Marcar como lida" pendingLabel="Marcando..." />}
