@@ -51,7 +51,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
     {
         if (string.IsNullOrWhiteSpace(request.OrderId))
         {
-            throw new Exception("Pedido nao informado.");
+            throw new InvalidOperationException("Pedido nao informado.");
         }
 
         var order = await _repository.GetQuery()
@@ -64,27 +64,27 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
 
         if (order == null)
         {
-            throw new Exception($"Pedido nao encontrado: {request.OrderId}");
+            throw new InvalidOperationException($"Pedido nao encontrado: {request.OrderId}");
         }
 
         if (order.Status != OrderStatus.Paid)
         {
-            throw new Exception("O frete so pode ser adicionado ao carrinho para pedidos com status Pago.");
+            throw new InvalidOperationException("O frete so pode ser adicionado ao carrinho para pedidos com status Pago.");
         }
 
         if (!string.IsNullOrWhiteSpace(order.MelhorEnvioCartId))
         {
-            throw new Exception($"Este pedido ja foi adicionado ao carrinho do Melhor Envio. Codigo: {order.MelhorEnvioCartId}");
+            throw new InvalidOperationException($"Este pedido ja foi adicionado ao carrinho do Melhor Envio. Codigo: {order.MelhorEnvioCartId}");
         }
 
         if (order.ShippingDetail == null)
         {
-            throw new Exception("O pedido nao possui dados de envio.");
+            throw new InvalidOperationException("O pedido nao possui dados de envio.");
         }
 
         if (order.ShippingBox == null)
         {
-            throw new Exception("O pedido nao possui caixa de envio.");
+            throw new InvalidOperationException("O pedido nao possui caixa de envio.");
         }
 
         var originPostCode = _shippingOriginProvider.GetOriginPostCode();
@@ -301,7 +301,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
     {
         if (string.IsNullOrWhiteSpace(rawResponse))
         {
-            throw new Exception("Melhor Envio nao retornou opcoes de frete para este trecho.");
+            throw new InvalidOperationException("Melhor Envio nao retornou opcoes de frete para este trecho.");
         }
 
         try
@@ -309,7 +309,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
             using var document = JsonDocument.Parse(rawResponse);
             if (document.RootElement.ValueKind != JsonValueKind.Array)
             {
-                throw new Exception("Melhor Envio retornou uma resposta invalida ao calcular o frete.");
+                throw new InvalidOperationException("Melhor Envio retornou uma resposta invalida ao calcular o frete.");
             }
 
             var services = document.RootElement
@@ -328,14 +328,14 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
 
             if (services?.Id == null)
             {
-                throw new Exception("Nenhuma transportadora atende este trecho para a caixa e CEP informados.");
+                throw new InvalidOperationException("Nenhuma transportadora atende este trecho para a caixa e CEP informados.");
             }
 
             return services.Id.Value;
         }
         catch (JsonException)
         {
-            throw new Exception("Melhor Envio retornou uma resposta invalida ao calcular o frete.");
+            throw new InvalidOperationException("Melhor Envio retornou uma resposta invalida ao calcular o frete.");
         }
     }
 
@@ -424,7 +424,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new Exception(message);
+            throw new InvalidOperationException(message);
         }
     }
 
@@ -432,7 +432,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
     {
         if (value == null || value <= 0m)
         {
-            throw new Exception(message);
+            throw new InvalidOperationException(message);
         }
     }
 
@@ -545,7 +545,7 @@ public class DownloadShippingLabelHandler : IRequestHandler<DownloadShippingLabe
     {
         if (string.IsNullOrWhiteSpace(request.LabelId))
         {
-            throw new Exception("Codigo da etiqueta nao informado.");
+            throw new InvalidOperationException("Codigo da etiqueta nao informado.");
         }
 
         var data = await _melhorEnvioService.BaixarEtiquetaPdfAsync(request.LabelId, cancellationToken);
@@ -585,23 +585,23 @@ public class MarkShippingCartHandler : IRequestHandler<MarkShippingCartRequest, 
     {
         if (string.IsNullOrWhiteSpace(request.OrderId))
         {
-            throw new Exception("Pedido nao informado.");
+            throw new InvalidOperationException("Pedido nao informado.");
         }
 
         if (string.IsNullOrWhiteSpace(request.CartId))
         {
-            throw new Exception("Codigo do carrinho nao informado.");
+            throw new InvalidOperationException("Codigo do carrinho nao informado.");
         }
 
         var order = await _repository.GetAsync(request.OrderId, cancellationToken);
         if (order == null)
         {
-            throw new Exception($"Pedido nao encontrado: {request.OrderId}");
+            throw new InvalidOperationException($"Pedido nao encontrado: {request.OrderId}");
         }
 
         if (!string.IsNullOrWhiteSpace(order.MelhorEnvioCartId))
         {
-            throw new Exception($"Este pedido ja foi marcado como adicionado ao carrinho. Codigo: {order.MelhorEnvioCartId}");
+            throw new InvalidOperationException($"Este pedido ja foi marcado como adicionado ao carrinho. Codigo: {order.MelhorEnvioCartId}");
         }
 
         order.MelhorEnvioCartId = request.CartId.Trim();
@@ -648,23 +648,23 @@ public class BuyShippingCartHandler : IRequestHandler<BuyShippingCartRequest, Bu
     {
         if (string.IsNullOrWhiteSpace(request.OrderId))
         {
-            throw new Exception("Pedido nao informado.");
+            throw new InvalidOperationException("Pedido nao informado.");
         }
 
         var order = await _repository.GetAsync(request.OrderId, cancellationToken);
         if (order == null)
         {
-            throw new Exception($"Pedido nao encontrado: {request.OrderId}");
+            throw new InvalidOperationException($"Pedido nao encontrado: {request.OrderId}");
         }
 
         if (string.IsNullOrWhiteSpace(order.MelhorEnvioCartId))
         {
-            throw new Exception("Este pedido ainda nao foi adicionado ao carrinho do Melhor Envio.");
+            throw new InvalidOperationException("Este pedido ainda nao foi adicionado ao carrinho do Melhor Envio.");
         }
 
         if (order.MelhorEnvioCheckoutAt != null)
         {
-            throw new Exception("Este frete ja foi comprado no Melhor Envio.");
+            throw new InvalidOperationException("Este frete ja foi comprado no Melhor Envio.");
         }
 
         var payload = new
@@ -719,28 +719,28 @@ public class GeneratePurchasedShippingLabelHandler : IRequestHandler<GeneratePur
     {
         if (string.IsNullOrWhiteSpace(request.OrderId))
         {
-            throw new Exception("Pedido nao informado.");
+            throw new InvalidOperationException("Pedido nao informado.");
         }
 
         var order = await _repository.GetAsync(request.OrderId, cancellationToken);
         if (order == null)
         {
-            throw new Exception($"Pedido nao encontrado: {request.OrderId}");
+            throw new InvalidOperationException($"Pedido nao encontrado: {request.OrderId}");
         }
 
         if (string.IsNullOrWhiteSpace(order.MelhorEnvioCartId))
         {
-            throw new Exception("Este pedido ainda nao foi adicionado ao carrinho do Melhor Envio.");
+            throw new InvalidOperationException("Este pedido ainda nao foi adicionado ao carrinho do Melhor Envio.");
         }
 
         if (order.MelhorEnvioCheckoutAt == null)
         {
-            throw new Exception("Este frete ainda nao foi comprado no Melhor Envio.");
+            throw new InvalidOperationException("Este frete ainda nao foi comprado no Melhor Envio.");
         }
 
         if (order.MelhorEnvioGeneratedAt != null)
         {
-            throw new Exception("Esta etiqueta ja foi gerada no Melhor Envio.");
+            throw new InvalidOperationException("Esta etiqueta ja foi gerada no Melhor Envio.");
         }
 
         var payload = new

@@ -50,7 +50,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            throw new Exception(error);
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync();
@@ -74,7 +74,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            throw new Exception(error);
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync();
@@ -99,7 +99,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -117,7 +117,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -142,7 +142,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -167,7 +167,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -192,7 +192,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -227,10 +227,10 @@ public class MelhorEnvioService : IMelhorEnvioService
                 continue;
             }
 
-            throw new Exception(message);
+            throw ApiFailure(response, error);
         }
 
-        throw new Exception("Etiqueta pdf nao processada.");
+        throw new InvalidOperationException("O Melhor Envio ainda não terminou de gerar o PDF da etiqueta. Tente baixar de novo em alguns segundos.");
     }
 
     public async Task<decimal?> CalculateShippingCostAsync(
@@ -309,7 +309,7 @@ public class MelhorEnvioService : IMelhorEnvioService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception(GetApiErrorMessage(error));
+            throw ApiFailure(response, error);
         }
 
         return await response.Content.ReadAsStringAsync(cancellationToken);
@@ -376,6 +376,32 @@ public class MelhorEnvioService : IMelhorEnvioService
     private static string OnlyDigits(string value)
     {
         return new string(value.Where(char.IsDigit).ToArray());
+    }
+
+    /// <summary>
+    /// Error from the Melhor Envio API as an InvalidOperationException, so the panel shows
+    /// the reason (CustomExceptionHandler hides the text of any other exception type).
+    /// </summary>
+    private static InvalidOperationException ApiFailure(HttpResponseMessage response, string responseBody)
+    {
+        var status = (int)response.StatusCode;
+        if (status == 401)
+        {
+            return new InvalidOperationException(
+                "O Melhor Envio recusou o token de acesso (expirado ou inválido). Gere um novo token no Melhor Envio e atualize a variável MELHOR_ENVIO_TOKEN do serviço da API no Render.");
+        }
+        if (status == 403)
+        {
+            return new InvalidOperationException(
+                "O token do Melhor Envio não tem permissão para esta ação. Gere um token com as permissões de carrinho, compra e impressão de etiquetas.");
+        }
+
+        var detail = GetApiErrorMessage(responseBody);
+        if (detail.Length > 300)
+        {
+            detail = detail[..300] + "...";
+        }
+        return new InvalidOperationException($"Melhor Envio (HTTP {status}): {detail}");
     }
 
     private static string GetApiErrorMessage(string responseBody)
