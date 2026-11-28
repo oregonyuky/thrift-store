@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Application.Features.OrderManager.Commands;
 using Application.Features.OrderManager.Queries;
 using ASPNET.BackEnd.Common.Base;
@@ -39,13 +40,24 @@ public class OrderController : BaseApiController
         });
     }
 
-    [Authorize]
+    // Staff see every order; a customer (the store's "Minhas compras") only ever gets her own.
+    [Authorize(Policy = "UserOrCustomer")]
     [HttpGet("GetOrderList")]
     public async Task<ActionResult<ApiSuccessResult<GetOrderListResult>>> GetOrderListAsync(
         CancellationToken cancellationToken,
         [FromQuery] bool isDeleted = false,
         [FromQuery] string? customerId = null)
     {
+        if (!User.HasClaim("identityType", "User"))
+        {
+            customerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            isDeleted = false;
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return Forbid();
+            }
+        }
+
         var request = new GetOrderListRequest
         {
             IsDeleted = isDeleted,
@@ -69,6 +81,14 @@ public class OrderController : BaseApiController
     {
         var request = new GetOrderSingleRequest { Id = id };
         var response = await _sender.Send(request, cancellationToken);
+
+        // A customer may only open her own order.
+        if (!User.HasClaim("identityType", "User") &&
+            response.Data != null &&
+            !string.Equals(response.Data.CustomerId, User.FindFirstValue(ClaimTypes.NameIdentifier), StringComparison.OrdinalIgnoreCase))
+        {
+            return NotFound();
+        }
 
         return Ok(new ApiSuccessResult<GetOrderSingleResult>
         {

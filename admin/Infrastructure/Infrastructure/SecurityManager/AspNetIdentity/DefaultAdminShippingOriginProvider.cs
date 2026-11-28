@@ -19,6 +19,18 @@ public class DefaultAdminShippingOriginProvider : IShippingOriginProvider
 
     public string? GetOriginPostCode()
     {
+        // The sender CEP in "Minha empresa" (/painel/empresa) wins: it is the one printed on the labels.
+        var companyPostCode = _context.Company
+            .AsNoTracking()
+            .Where(company => !company.IsDeleted)
+            .Select(company => company.ZipCode)
+            .FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(companyPostCode))
+        {
+            return companyPostCode;
+        }
+
         var adminEmail = ConfigurationPlaceholderResolver.Resolve(_identitySettings.DefaultAdmin.Email);
         var profilePostCode = _context.Users
             .AsNoTracking()

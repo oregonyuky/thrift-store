@@ -262,6 +262,12 @@ public class BagController : BaseApiController
         [FromQuery] string customerId,
         CancellationToken cancellationToken)
     {
+        // A customer only sees her own history, whatever customerId she sends.
+        if (!User.HasClaim("identityType", "User"))
+        {
+            customerId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? string.Empty;
+        }
+
         if (string.IsNullOrWhiteSpace(customerId))
         {
             return BadRequest("Cliente nao informado.");

@@ -15,7 +15,7 @@ export default async function CompanyPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Minha empresa" subtitle="Dados da loja. O nome, o endereço, o CEP e o telefone saem como remetente nas etiquetas do Melhor Envio." />
+      <PageHeader title="Minha empresa" subtitle="Dados da loja. O CEP do remetente é a origem do cálculo de frete na loja, e o nome, o endereço e o telefone saem como remetente nas etiquetas do Melhor Envio." />
       <LoadError show={company === undefined} what="os dados da empresa" />
       {company === null && <p className="panel p-6 text-sm text-muted">Nenhum cadastro de empresa encontrado na API.</p>}
       {company && (

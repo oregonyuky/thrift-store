@@ -79,9 +79,9 @@ export function SenderAddress({ street, city, state, zipCode }: { street?: strin
       <input type="hidden" name="street" value={line} />
       <div className="grid gap-3.5 sm:grid-cols-[170px_1fr]">
         <div className="flex flex-col gap-1.5">
-          <Field label="CEP" name="zipCode" required inputMode="numeric" autoComplete="postal-code" placeholder="13010-000" value={a.cep} onChange={set("cep")} aria-describedby="cep-status" />
+          <Field label="CEP do remetente" name="zipCode" required inputMode="numeric" autoComplete="postal-code" placeholder="13010-000" value={a.cep} onChange={set("cep")} aria-describedby="cep-status" />
           <span id="cep-status" aria-live="polite" className={`text-xs ${status === "missing" ? "text-bad-fg" : "text-muted"}`}>
-            {status === "loading" ? "Buscando endereço..." : status === "found" ? "Endereço preenchido pelo CEP." : status === "missing" ? "CEP não encontrado. Preencha o endereço à mão." : "Digite o CEP para preencher o endereço."}
+            {status === "loading" ? "Buscando endereço..." : status === "found" ? "Endereço preenchido pelo CEP." : status === "missing" ? "CEP não encontrado. Preencha o endereço à mão." : "De onde as peças saem: vale para o frete da loja e para as etiquetas."}
           </span>
         </div>
         <Field label="Rua" name="rua" required autoComplete="address-line1" value={a.rua} onChange={set("rua")} />

@@ -328,3 +328,69 @@ export async function getUnreadMessages(session: AdminSession): Promise<number |
     return null;
   }
 }
+
+/* ---------- One bag, with its pieces ---------- */
+
+export interface BagItem {
+  id: string;
+  productId?: string;
+  name: string;
+  imageUrl?: string | null;
+  price: number;
+  quantity: number;
+  isPaid: boolean;
+  isReserved: boolean;
+  reservationExpiresAt?: string;
+  addedAt?: string;
+  paidAt?: string;
+}
+
+export interface BagDetail extends BagRow {
+  customerId?: string;
+  notes?: string;
+  items: BagItem[];
+  history: Array<{ id: string; oldDate?: string; newDate?: string; changedAt?: string; note?: string; changedBy?: string }>;
+}
+
+export async function getBagDetail(session: AdminSession, id: string): Promise<BagDetail | null> {
+  const b = await apiRequest<Raw>(`api/Bag/GetBagSingle?id=${encodeURIComponent(id)}`, { token: session.token, allowNotFound: true });
+  if (!b || !str(b.id)) return null;
+  const items = list(b.items).map((i) => ({
+    id: String(i.id ?? i.productId ?? ""),
+    productId: str(i.productId),
+    name: str(i.productName) ?? "Peça",
+    imageUrl: resolveImageUrl(str(i.productImageUrl)),
+    price: num(i.price) ?? 0,
+    quantity: num(i.quantity) ?? 1,
+    isPaid: i.isPaid === true,
+    isReserved: i.isReserved === true,
+    reservationExpiresAt: str(i.reservationExpiresAt),
+    addedAt: str(i.addedAt),
+    paidAt: str(i.paidAt),
+  }));
+  return {
+    id: String(b.id),
+    customerId: str(b.customerId),
+    customerName: str(b.customerName),
+    status: str(b.status) ?? "Active",
+    createdAt: str(b.createdAt),
+    expirationDate: str(b.expirationDate),
+    closedAt: str(b.closedAt),
+    lastInteractionAt: str(b.lastInteractionAt),
+    totalItemsValue: num(b.totalItemsValue) ?? items.reduce((s, i) => s + i.price * i.quantity, 0),
+    shippingCost: num(b.shippingCost),
+    totalWeight: num(b.totalWeight),
+    allItemsPaid: b.allItemsPaid === true,
+    itemCount: items.length,
+    notes: str(b.notes),
+    items,
+    history: list(b.expirationHistory).map((h) => ({
+      id: String(h.id ?? ""),
+      oldDate: str(h.oldExpirationDate),
+      newDate: str(h.newExpirationDate),
+      changedAt: str(h.changedAtUtc),
+      note: str(h.note),
+      changedBy: str(h.changedBy),
+    })),
+  };
+}
