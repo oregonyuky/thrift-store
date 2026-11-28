@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Data;
+using System.Security.Claims;
 
 namespace ASPNET.BackEnd.Controllers;
 
@@ -265,7 +266,7 @@ public class BagController : BaseApiController
         // A customer only sees her own history, whatever customerId she sends.
         if (!User.HasClaim("identityType", "User"))
         {
-            customerId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? string.Empty;
+            customerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         }
 
         if (string.IsNullOrWhiteSpace(customerId))
