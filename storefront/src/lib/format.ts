@@ -78,3 +78,34 @@ export function formatPhone(value: string) {
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
+
+/** 000.000.000-00 while 11 digits or fewer, 00.000.000/0000-00 beyond that. */
+export function formatCpfCnpj(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 11) {
+    return d.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  return d.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+/** Check digits of a CPF (11 digits) or CNPJ (14 digits). */
+export function isValidCpfCnpj(value: string) {
+  const d = value.replace(/\D/g, "");
+  if (/^(\d)\1+$/.test(d)) return false;
+  const digit = (base: string, weights: number[]) => {
+    const sum = base.split("").reduce((acc, n, i) => acc + Number(n) * weights[i], 0);
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  if (d.length === 11) {
+    const w1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+    const w2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+    return digit(d.slice(0, 9), w1) === Number(d[9]) && digit(d.slice(0, 10), w2) === Number(d[10]);
+  }
+  if (d.length === 14) {
+    const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    return digit(d.slice(0, 12), w1) === Number(d[12]) && digit(d.slice(0, 13), w2) === Number(d[13]);
+  }
+  return false;
+}

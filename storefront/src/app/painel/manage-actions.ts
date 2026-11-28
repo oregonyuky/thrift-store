@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiError, apiRequest, apiUpload } from "@/lib/api";
+import { isValidCpfCnpj } from "@/lib/format";
 import { toApiDuration } from "@/lib/painel/duration";
 import { getCustomers, getMyProfile } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
@@ -419,6 +420,9 @@ export async function saveCompany(_: FormResult, form: FormData): Promise<FormRe
   if (!t(form, "street")) return { error: "Informe o endereço." };
   const phoneDigits = t(form, "phoneNumber").replace(/\D/g, "");
   if (phoneDigits.length < 10 || phoneDigits.length > 11) return { error: "Informe o telefone com DDD, ex.: (19) 99999-0000." };
+  const senderDocument = t(form, "senderDocument").replace(/\D/g, "");
+  if (senderDocument.length !== 11 && senderDocument.length !== 14) return { error: "Informe o CPF (11 números) ou o CNPJ (14 números) do remetente." };
+  if (!isValidCpfCnpj(senderDocument)) return { error: `${senderDocument.length === 11 ? "CPF" : "CNPJ"} do remetente inválido. Confira os números.` };
   const zip = t(form, "zipCode").replace(/\D/g, "");
   if (zip.length !== 8) return { error: "Informe um CEP com 8 números." };
   const state = t(form, "state").toUpperCase();
@@ -434,7 +438,8 @@ export async function saveCompany(_: FormResult, form: FormData): Promise<FormRe
     zipCode: `${zip.slice(0, 5)}-${zip.slice(5)}`,
     country: opt(form, "country") ?? "Brasil",
     phoneNumber: t(form, "phoneNumber"),
-    faxNumber: opt(form, "faxNumber"),
+    // The API keeps the sender CPF/CNPJ in the company's (unused) fax field.
+    faxNumber: senderDocument,
     emailAddress: t(form, "emailAddress"),
     website: opt(form, "website"),
     updatedById: session.userId,

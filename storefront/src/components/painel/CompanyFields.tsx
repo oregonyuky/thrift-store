@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { formatCep } from "@/components/ShippingQuote";
-import { formatPhone } from "@/lib/format";
+import { formatCpfCnpj, formatPhone } from "@/lib/format";
 import { Field } from "./Fields";
 
 export function PhoneField({ defaultValue }: { defaultValue?: string }) {
@@ -19,6 +19,26 @@ export function PhoneField({ defaultValue }: { defaultValue?: string }) {
       value={value}
       onChange={(e) => setValue(formatPhone(e.target.value))}
     />
+  );
+}
+
+/** Sender CPF or CNPJ, required by Melhor Envio on every label. Saved in the API's fax field. */
+export function SenderDocumentField({ defaultValue }: { defaultValue?: string }) {
+  const [value, setValue] = useState(formatCpfCnpj(defaultValue ?? ""));
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Field
+        label="CPF ou CNPJ do remetente"
+        name="senderDocument"
+        required
+        inputMode="numeric"
+        placeholder="000.000.000-00"
+        value={value}
+        onChange={(e) => setValue(formatCpfCnpj(e.target.value))}
+        aria-describedby="doc-hint"
+      />
+      <span id="doc-hint" className="text-xs text-muted">O Melhor Envio pede o documento de quem envia em toda etiqueta.</span>
+    </div>
   );
 }
 

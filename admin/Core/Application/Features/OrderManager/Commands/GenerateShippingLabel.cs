@@ -148,6 +148,8 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
         var senderState = NormalizeState(company?.State);
         var recipientState = NormalizeState(shipping.State);
         var senderPhone = OnlyDigits(company?.PhoneNumber);
+        // Sender CPF (11 digits) or CNPJ (14 digits), kept in Company.FaxNumber (see Company).
+        var senderDocument = OnlyDigits(company?.FaxNumber);
         var recipientPhone = OnlyDigits(shipping.PhoneNumber);
         var recipientDocument = OnlyDigits(order.Customer?.Cpf);
 
@@ -157,6 +159,12 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
         ValidateRequired(company?.Street, "Endereco de origem nao informado.");
         ValidateRequired(company?.City, "Cidade de origem nao informada.");
         ValidateRequired(senderPhone, "Telefone de origem nao informado.");
+        ValidateRequired(senderDocument, "CPF ou CNPJ do remetente nao informado. Preencha em Minha empresa no painel.");
+        if (senderDocument!.Length != 11 && senderDocument.Length != 14)
+        {
+            throw new InvalidOperationException("CPF ou CNPJ do remetente invalido. Confira em Minha empresa no painel.");
+        }
+        var senderIsCompany = senderDocument.Length == 14;
         ValidateRequired(shipping.PostCode, "CEP do destinatario nao informado.");
         ValidateRequired(recipientState, "Estado do destinatario invalido. Informe a UF, por exemplo SP.");
         ValidateRequired(recipientName, "Nome do destinatario nao informado.");
@@ -174,22 +182,7 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
         var payload = new Dictionary<string, object?>
         {
             ["service"] = serviceId,
-            ["from"] = new
-            {
-                name = company?.Name,
-                email = company?.EmailAddress,
-                phone = senderPhone,
-                state_register = string.Empty,
-                economic_activity_code = string.Empty,
-                address = company?.Street,
-                complement = string.Empty,
-                number = "S/N",
-                district = "Centro",
-                city = company?.City,
-                postal_code = senderPostCode,
-                state_abbr = senderState,
-                country_id = "BR"
-            },
+            ["from"] = BuildSender(company, senderPhone, senderPostCode, senderState, senderDocument!, senderIsCompany),
             ["to"] = new
             {
                 name = recipientName,
@@ -418,6 +411,35 @@ public class GenerateShippingLabelHandler : IRequestHandler<GenerateShippingLabe
             JsonValueKind.String when decimal.TryParse(property.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var number) => number,
             _ => null
         };
+    }
+
+    private static Dictionary<string, object?> BuildSender(
+        Domain.Entities.Company? company,
+        string? phone,
+        string? postCode,
+        string? state,
+        string document,
+        bool isCompany)
+    {
+        var sender = new Dictionary<string, object?>
+        {
+            ["name"] = company?.Name,
+            ["email"] = company?.EmailAddress,
+            ["phone"] = phone,
+            ["state_register"] = string.Empty,
+            ["economic_activity_code"] = string.Empty,
+            ["address"] = company?.Street,
+            ["complement"] = string.Empty,
+            ["number"] = "S/N",
+            ["district"] = "Centro",
+            ["city"] = company?.City,
+            ["postal_code"] = postCode,
+            ["state_abbr"] = state,
+            ["country_id"] = "BR"
+        };
+        // Melhor Envio: CPF goes in "document", CNPJ in "company_document".
+        sender[isCompany ? "company_document" : "document"] = document;
+        return sender;
     }
 
     private static void ValidateRequired(string? value, string message)

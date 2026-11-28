@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { saveCompany } from "@/app/painel/manage-actions";
 import { Field, LoadError, PageHeader, TextArea } from "@/components/painel/Fields";
-import { PhoneField, SenderAddress } from "@/components/painel/CompanyFields";
+import { PhoneField, SenderAddress, SenderDocumentField } from "@/components/painel/CompanyFields";
 import { FormShell } from "@/components/painel/FormShell";
 import { getCompany } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
@@ -23,7 +23,6 @@ export default async function CompanyPage() {
           <FormShell action={saveCompany}>
             <input type="hidden" name="id" value={company.id} />
             <input type="hidden" name="currency" value={company.currency ?? "BRL"} />
-            <input type="hidden" name="faxNumber" value={company.faxNumber ?? ""} />
             <h2 className="text-base font-bold">Loja</h2>
             <div className="grid gap-3.5 sm:grid-cols-2">
               <Field label="Nome da loja" name="name" defaultValue={company.name} required />
@@ -33,7 +32,8 @@ export default async function CompanyPage() {
             </div>
             <TextArea label="Descrição (opcional)" name="description" defaultValue={company.description} />
 
-            <h2 className="mt-3 border-t border-sand pt-4 text-base font-bold">Endereço de remetente</h2>
+            <h2 className="mt-3 border-t border-sand pt-4 text-base font-bold">Remetente</h2>
+            <SenderDocumentField defaultValue={company.faxNumber} />
             <SenderAddress street={company.street} city={company.city} state={company.state} zipCode={company.zipCode} />
             <Field label="País" name="country" defaultValue={company.country ?? "Brasil"} />
           </FormShell>
