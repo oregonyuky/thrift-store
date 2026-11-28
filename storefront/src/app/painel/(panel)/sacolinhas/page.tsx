@@ -7,20 +7,11 @@ import { FormShell } from "@/components/painel/FormShell";
 import { getBags, getBagSettings, type BagRow } from "@/lib/painel/data";
 import { getBagSettingsFull } from "@/lib/painel/manage";
 import { dateTime, dayKey, money } from "@/lib/painel/format";
+import { durationLabel, fromApiDuration, unitOptions } from "@/lib/painel/duration";
 import { requireSession } from "@/lib/painel/session";
 
 export const metadata: Metadata = { title: "Sacolinhas" };
 export const dynamic = "force-dynamic";
-
-const unitLabel: Record<string, [string, string]> = {
-  minutes: ["minuto", "minutos"],
-  hours: ["hora", "horas"],
-  days: ["dia", "dias"],
-  weeks: ["semana", "semanas"],
-  months: ["mês", "meses"],
-};
-
-const unitOptions: Array<[string, string]> = [["hours", "horas"], ["days", "dias"], ["weeks", "semanas"], ["months", "meses"]];
 
 const columns: Array<{ title: string; statuses: string[]; color: string }> = [
   { title: "Abertas", statuses: ["Active"], color: "bg-terra" },
@@ -38,6 +29,10 @@ function deadline(bag: BagRow) {
   const today = dayKey(new Date());
   const day = dayKey(bag.expirationDate);
   if (end <= now) return { text: `Venceu em ${dateTime(bag.expirationDate)}`, pct: 100, urgent: true };
+  if (end - now < 3600000) {
+    const mins = Math.max(1, Math.ceil((end - now) / 60000));
+    return { text: `Fecha em ${mins} ${mins === 1 ? "minuto" : "minutos"}`, pct, urgent: true };
+  }
   if (day === today) return { text: `Fecha hoje às ${new Date(end).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" })}`, pct, urgent: true };
   const daysLeft = Math.ceil((end - now) / 86400000);
   return { text: `Fecha em ${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`, pct, urgent: daysLeft <= 1 };
@@ -47,9 +42,7 @@ export default async function BagsPage({ searchParams }: { searchParams: Promise
   const session = await requireSession();
   const { config } = await searchParams;
   const [bags, settings, full] = await Promise.all([getBags(session).catch(() => null), getBagSettings(session), config ? getBagSettingsFull(session) : Promise.resolve(null)]);
-  const units = unitLabel[settings?.extensionDurationUnit ?? "days"] ?? ["dia", "dias"];
-  const ext = settings?.extensionDurationValue ?? 7;
-  const extendLabel = `Prorrogar ${ext} ${ext === 1 ? units[0] : units[1]}`;
+  const extendLabel = `Prorrogar ${durationLabel(settings?.extensionDurationValue ?? 7, settings?.extensionDurationUnit ?? "days")}`;
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -68,14 +61,14 @@ export default async function BagsPage({ searchParams }: { searchParams: Promise
         <SidePanel title="Prazos da sacolinha" closeHref="/painel/sacolinhas">
           {full ? (
             <FormShell action={saveBagSettings}>
-              <p className="text-sm text-muted">Valem para as próximas sacolinhas abertas e prorrogações.</p>
+              <p className="text-sm text-muted">Valem para as próximas sacolinhas abertas e prorrogações. O mínimo é 1 minuto.</p>
               <div className="grid grid-cols-[1fr_1.2fr] gap-3">
-                <Field label="Duração padrão" name="defaultDurationValue" type="number" min={1} defaultValue={full.defaultDurationValue} />
-                <Select label="Unidade" name="defaultDurationUnit" defaultValue={full.defaultDurationUnit} options={unitOptions} />
-                <Field label="Cada prorrogação" name="extensionDurationValue" type="number" min={1} defaultValue={full.extensionDurationValue} />
-                <Select label="Unidade" name="extensionDurationUnit" defaultValue={full.extensionDurationUnit} options={unitOptions} />
-                <Field label="Prazo para responder o e-mail de prorrogação" name="extensionResponseDeadlineValue" type="number" min={1} defaultValue={full.extensionResponseDeadlineValue} />
-                <Select label="Unidade" name="extensionResponseDeadlineUnit" defaultValue={full.extensionResponseDeadlineUnit} options={unitOptions} />
+                <Field label="Duração padrão" name="defaultDurationValue" type="number" min={1} defaultValue={fromApiDuration(full.defaultDurationValue, full.defaultDurationUnit).value} />
+                <Select label="Unidade" name="defaultDurationUnit" defaultValue={fromApiDuration(full.defaultDurationValue, full.defaultDurationUnit).unit} options={unitOptions} />
+                <Field label="Cada prorrogação" name="extensionDurationValue" type="number" min={1} defaultValue={fromApiDuration(full.extensionDurationValue, full.extensionDurationUnit).value} />
+                <Select label="Unidade" name="extensionDurationUnit" defaultValue={fromApiDuration(full.extensionDurationValue, full.extensionDurationUnit).unit} options={unitOptions} />
+                <Field label="Prazo para responder o e-mail de prorrogação" name="extensionResponseDeadlineValue" type="number" min={1} defaultValue={fromApiDuration(full.extensionResponseDeadlineValue, full.extensionResponseDeadlineUnit).value} />
+                <Select label="Unidade" name="extensionResponseDeadlineUnit" defaultValue={fromApiDuration(full.extensionResponseDeadlineValue, full.extensionResponseDeadlineUnit).unit} options={unitOptions} />
               </div>
             </FormShell>
           ) : (

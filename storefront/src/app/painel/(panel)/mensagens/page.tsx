@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { markMessageRead } from "@/app/painel/manage-actions";
+import { deleteMessage, markMessageRead } from "@/app/painel/manage-actions";
 import { LoadError, PageHeader, SidePanel } from "@/components/painel/Fields";
-import { ChatIcon } from "@/components/painel/icons";
 import { ActionButton } from "@/components/painel/FormShell";
+import { WhatsAppButton } from "@/components/painel/WhatsAppButton";
 import { dateTime, relative } from "@/lib/painel/format";
 import { getMessages } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
@@ -85,17 +85,17 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                   Responder por e-mail
                 </a>
               )}
-              {selected.phone && (
-                <a
-                  className="btn-primary !bg-sage hover:!bg-[#435c49]"
-                  href={`https://wa.me/55${selected.phone.replace(/\D/g, "").replace(/^55/, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ChatIcon size={16} /> Responder no WhatsApp
-                </a>
-              )}
+              <WhatsAppButton phone={selected.phone} label="Responder no WhatsApp" text={`Oi, ${selected.name ?? ""}! Aqui é da Thrift Brechó, sobre a sua mensagem${selected.subject ? ` "${selected.subject}"` : ""}.`} />
               {!selected.isRead && <ActionButton action={markMessageRead.bind(null, selected.id)} label="Marcar como lida" pendingLabel="Marcando..." />}
+            </div>
+            <div className="border-t border-sand pt-3">
+              <ActionButton
+                action={deleteMessage.bind(null, selected.id)}
+                label="Excluir mensagem"
+                pendingLabel="Excluindo..."
+                confirm={`Excluir a mensagem de ${selected.name ?? "contato"}? Ela sai da lista.`}
+                className="text-sm font-medium text-bad-fg hover:underline"
+              />
             </div>
           </SidePanel>
         )}

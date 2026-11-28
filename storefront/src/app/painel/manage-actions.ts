@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ApiError, apiRequest, apiUpload } from "@/lib/api";
+import { toApiDuration } from "@/lib/painel/duration";
 import { getCustomers, getMyProfile } from "@/lib/painel/manage";
 import { requireSession } from "@/lib/painel/session";
 
@@ -96,6 +98,13 @@ export async function markMessageRead(id: string): Promise<FormResult> {
   const result = await call(`api/contact-messages/${encodeURIComponent(id)}/read`, { method: "PUT" }, "/painel/mensagens", "Não foi possível marcar como lida.", "Marcada como lida.");
   revalidatePath("/painel", "layout");
   return result;
+}
+
+export async function deleteMessage(id: string): Promise<FormResult> {
+  const result = await call(`api/contact-messages/${encodeURIComponent(id)}`, { method: "DELETE" }, "/painel/mensagens", "Não foi possível excluir a mensagem.", "Mensagem excluída.");
+  if (result.error) return result;
+  revalidatePath("/painel", "layout");
+  redirect("/painel/mensagens");
 }
 
 /* ---------- Categories ---------- */
@@ -359,17 +368,25 @@ export async function rechargeBalance(_: FormResult, form: FormData): Promise<Fo
 /* ---------- Bag settings ---------- */
 
 export async function saveBagSettings(_: FormResult, form: FormData): Promise<FormResult> {
-  const unit = (key: string) => (["minutes", "hours", "days", "weeks", "months"].includes(t(form, key)) ? t(form, key) : "days");
+  const read = (key: string, fallback: number) => {
+    const value = int(form, `${key}Value`, fallback);
+    if (value < 1) return null;
+    return toApiDuration(value, t(form, `${key}Unit`) || "days");
+  };
+  const main = read("defaultDuration", 60);
+  const ext = read("extensionDuration", 7);
+  const reply = read("extensionResponseDeadline", 7);
+  if (!main || !ext || !reply) return { error: "Os prazos precisam ser de pelo menos 1." };
   return call(
     "api/Bag/UpdateBagSettings",
     {
       body: {
-        defaultDurationValue: int(form, "defaultDurationValue", 60),
-        defaultDurationUnit: unit("defaultDurationUnit"),
-        extensionDurationValue: int(form, "extensionDurationValue", 7),
-        extensionDurationUnit: unit("extensionDurationUnit"),
-        extensionResponseDeadlineValue: int(form, "extensionResponseDeadlineValue", 7),
-        extensionResponseDeadlineUnit: unit("extensionResponseDeadlineUnit"),
+        defaultDurationValue: main.value,
+        defaultDurationUnit: main.unit,
+        extensionDurationValue: ext.value,
+        extensionDurationUnit: ext.unit,
+        extensionResponseDeadlineValue: reply.value,
+        extensionResponseDeadlineUnit: reply.unit,
       },
     },
     "/painel/sacolinhas",

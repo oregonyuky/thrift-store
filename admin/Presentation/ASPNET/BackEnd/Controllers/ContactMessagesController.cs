@@ -83,4 +83,22 @@ public sealed class ContactMessagesController : BaseApiController
             Content = response
         });
     }
+
+    [Authorize(Roles = "Messages")]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiSuccessResult<DeleteContactMessageResult>>> DeleteAsync(
+        string id,
+        CancellationToken cancellationToken)
+    {
+        var response = await _sender.Send(
+            new DeleteContactMessageRequest { Id = id },
+            cancellationToken);
+
+        return Ok(new ApiSuccessResult<DeleteContactMessageResult>
+        {
+            Code = StatusCodes.Status200OK,
+            Message = "Mensagem excluída.",
+            Content = response
+        });
+    }
 }

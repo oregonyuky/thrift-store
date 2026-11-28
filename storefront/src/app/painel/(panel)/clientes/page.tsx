@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LiveSearch } from "@/components/painel/LiveSearch";
 import { deleteCustomer, saveCustomer } from "@/app/painel/manage-actions";
+import { WhatsAppButton, whatsAppUrl } from "@/components/painel/WhatsAppButton";
 import { Field, LoadError, PageHeader, rowCls, Select, SidePanel, td, TextArea, th } from "@/components/painel/Fields";
 import { ActionButton, FormShell } from "@/components/painel/FormShell";
 import { StatusBadge } from "@/components/painel/StatusBadge";
@@ -56,7 +57,16 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                   </td>
                   <td className={`${td} text-muted`}>
                     {c.emailAddress}
-                    {c.phoneNumber && <span className="block text-xs">{c.phoneNumber}</span>}
+                    {c.phoneNumber && (
+                      <span className="block text-xs">
+                        {c.phoneNumber}
+                        {whatsAppUrl(c.phoneNumber) && (
+                          <a href={whatsAppUrl(c.phoneNumber)!} target="_blank" rel="noreferrer" className="ml-2 font-bold text-sage hover:underline" aria-label={`Conversar com ${c.name || "a cliente"} no WhatsApp`}>
+                            WhatsApp
+                          </a>
+                        )}
+                      </span>
+                    )}
                   </td>
                   <td className={`${td} text-muted`}>{[c.city, c.state].filter(Boolean).join(" / ") || "—"}</td>
                   <td className={`${td} num text-right`}>{money(spent(c.id))}</td>
@@ -70,6 +80,14 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
         {selected && (
           <SidePanel title={selected.name || "Cliente"} closeHref={href()}>
+            {(whatsAppUrl(selected.phoneNumber) || selected.emailAddress) && (
+              <div className="flex flex-wrap gap-2.5">
+                <WhatsAppButton phone={selected.phoneNumber} text={`Oi, ${(selected.name ?? "").split(" ")[0]}! Aqui é da Thrift Brechó.`} />
+                {selected.emailAddress && (
+                  <a className="btn-ghost" href={`mailto:${selected.emailAddress}`}>Enviar e-mail</a>
+                )}
+              </div>
+            )}
             {(() => {
               const list = orders.filter((o) => o.customerId === selected.id).slice(0, 6);
               return list.length > 0 ? (

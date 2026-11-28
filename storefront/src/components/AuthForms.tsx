@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { login, register, sendContact, type FormState } from "@/app/actions";
+import { formatPhone } from "@/lib/format";
 import { SubmitButton } from "./SubmitButton";
 
 function Input({ label, name, error, ...rest }: { label: string; name: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
@@ -13,6 +14,14 @@ function Input({ label, name, error, ...rest }: { label: string; name: string; e
       <input id={id} name={name} className="field" aria-invalid={!!error} aria-describedby={error ? `${id}-err` : undefined} {...rest} />
       {error && <span id={`${id}-err`} className="text-[13px] text-bad-fg">{error}</span>}
     </div>
+  );
+}
+
+/** Phone with the (19) 99999-0000 mask applied as the customer types. */
+function PhoneInput({ error }: { error?: string }) {
+  const [value, setValue] = useState("");
+  return (
+    <Input label="Telefone" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="(19) 99999-0000" error={error} required value={value} onChange={(e) => setValue(formatPhone(e.target.value))} />
   );
 }
 
@@ -79,7 +88,7 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label="Nome" name="name" autoComplete="name" error={fe.name} required />
         <Input label="E-mail" name="email" type="email" autoComplete="email" error={fe.email} required />
-        <Input label="Telefone" name="phone" type="tel" autoComplete="tel" error={fe.phone} required />
+        <PhoneInput error={fe.phone} />
         <Input label="Assunto" name="subject" placeholder="Ex.: troca do pedido" error={fe.subject} required />
       </div>
       <div className="flex flex-col gap-1.5">
